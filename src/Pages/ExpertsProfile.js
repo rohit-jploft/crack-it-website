@@ -130,6 +130,21 @@ const ExpertsProfile = () => {
                     <span>/ hr</span>
                   </h4>
                 </div>
+                {profileData?.expert.user._id.toString() === loggedUserId?.toString() && (
+                  <div className="text-center">
+                    {/* <Link to="/Wallet"> */}
+
+                    <button
+                      onClick={() => navigate("/edit/Myprofile")}
+                      className="btn_continue"
+                      style={{ width: "300px", height: "40px" }}
+                    >
+                      EDIT
+                    </button>
+
+                    {/* </Link> */}
+                  </div>
+                )}
                 {userId && (
                   <div className="text-center">
                     {/* <Link to="/Wallet"> */}

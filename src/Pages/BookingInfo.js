@@ -8,10 +8,19 @@ import Time2 from "./../Images/time2.svg";
 import Message2 from "./../Images/message2.svg";
 import { getSingleBookingDetail } from "../data/booking";
 import { getDateFromTimeStamps, getTimeFromTimestamps } from "../helper/helper";
+import TextInput from "../components/InputField";
+import Axios from "axios";
+import { loadStripe } from "@stripe/stripe-js";
+import { BASE_URL, STRIPE_PUBLIC_KEY } from "../constant";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const BookingInfo = () => {
   const { bookingId } = useParams();
   const [bookingData, setBookingData] = useState();
+  const [promoCode, setPromoCode] = useState("");
+  const [promoApplied, setPromoApplied] = useState(false);
+  const [promoRemoved, setPromoRemoved] = useState(false);
   const getBookingData = async () => {
     const data = await getSingleBookingDetail(bookingId);
     console.log(data);
@@ -19,10 +28,76 @@ const BookingInfo = () => {
   };
   useEffect(() => {
     getBookingData();
-  }, []);
+    setPromoApplied(false);
+    setPromoRemoved(false);
+  }, [promoApplied, promoRemoved]);
+
+  const applyPromoCode = async () => {
+    try {
+      const res = await Axios.put(`${BASE_URL}promo/code/apply`, {
+        promoCode,
+        bookingId,
+      });
+      console.log(res);
+
+      if (res && res.data) {
+        setPromoApplied(true);
+        toast(res?.data?.message, { type: res?.data?.type });
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const removePromoCode = async () => {
+    try {
+      const res = await Axios.put(`${BASE_URL}promo/code/remove`, {
+        bookingId,
+      });
+      console.log(res);
+      if (res && res.data && res.data.success) {
+        console.log("promo removed");
+        setPromoCode("");
+        setPromoRemoved(true);
+        toast.success("Promo removed successfully");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const makePayment = async (amount, meetingId) => {
+    const stripe = await loadStripe(STRIPE_PUBLIC_KEY);
+
+    try {
+      const body = {
+        amount: amount,
+        meetingId: meetingId,
+      };
+      const headers = {
+        "Content-Type": "application/json",
+      };
+      const response = await fetch(`${BASE_URL}payment/intent/create`, {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify(body),
+      });
+
+      const session = await response.json();
+
+      const result = stripe.redirectToCheckout({
+        sessionId: session.id,
+      });
+
+      if (result.error) {
+        console.log(result.error);
+      }
+    } catch (error) {
+      return error;
+    }
+  };
   return (
     <>
       <Header />
+      <ToastContainer />
       <section className="">
         <Container>
           <div className="main-content">
@@ -37,7 +112,7 @@ const BookingInfo = () => {
                   className={`btn_${
                     bookingData?.booking?.booking?.status === "CONFIRMED" ||
                     bookingData?.booking?.booking?.status === "ACCEPTED" ||
-                    bookingData?.booking?.booking?.status === "COMPLETED" 
+                    bookingData?.booking?.booking?.status === "COMPLETED"
                       ? "confirmed"
                       : "rejected"
                   }`}
@@ -102,6 +177,39 @@ const BookingInfo = () => {
                     </div>
                   </div> */}
                 </div>
+                {bookingData?.booking?.status === "UNPAID" && (
+                  <div className="promo-card-container promocode-nader">
+                    <h3>Promos & Gift Codes</h3>
+                    <p>
+                      <strong>Note:</strong> One discount can be redeemed per
+                      order. See terms for details.
+                    </p>
+                    <div className="promo-input">
+                      <TextInput
+                        name="promoCode"
+                        label="Promo Code"
+                        readonly={bookingData?.booking.promoCode}
+                        value={
+                          bookingData?.booking.promoCode
+                            ? bookingData?.booking.promoCode.code
+                            : promoCode
+                        }
+                        handleChange={(e) => setPromoCode(e.target.value)}
+                      />
+                      {!bookingData?.booking.promoCode && (
+                        <button onClick={() => applyPromoCode()}>APPLY</button>
+                      )}
+                      {bookingData?.booking.promoCode && (
+                        <button
+                          style={{ backgroundColor: "red", color: "white" }}
+                          onClick={() => removePromoCode()}
+                        >
+                          Remove
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
                 <div className="payment-info">
                   <h5>Payment Info</h5>
                   <div className="pay-rate">
@@ -109,16 +217,45 @@ const BookingInfo = () => {
                     <div>${bookingData?.booking.totalAmount}</div>
                   </div>
                   <div className="pay-rate">
-                    <div>Tax</div>
-                    <div>$0.00</div>
+                    <div>Platform fees</div>
+                    <div>${bookingData?.booking?.CommissionAmount}</div>
                   </div>
+                  {bookingData?.booking?.promoCode && (
+                    <div className="pay-rate">
+                      <div>Discount</div>
+                      <div>${bookingData?.booking?.discountAmount}</div>
+                    </div>
+                  )}
                   <hr className="info-hr"></hr>
                   <div className="pay-total">
                     <div>Payment Total</div>
-                    <div>${bookingData?.booking.totalAmount}</div>
+                    <div>${bookingData?.booking.grandTotal}</div>
                   </div>
                 </div>
               </div>
+              {bookingData?.booking?.status === "UNPAID" && (
+                <div
+                  style={{
+                    width: "100%",
+                    display: "flex",
+                    flexDirection: "row",
+                    justifyContent: "center",
+                    alignItems: "flex-end",
+                    marginTop: "15px",
+                  }}
+                >
+                  <button
+                    className="form-btn"
+                    type="submit"
+                    style={{ marginLeft: "auto", width: "35%" }}
+                    onClick={() => {
+                      makePayment(bookingData?.booking?.grandTotal, bookingId);
+                    }}
+                  >
+                    Pay & Proceed
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </Container>

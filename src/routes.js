@@ -24,6 +24,14 @@ import AddBankDtails from "./Pages/AddBankDetails";
 import AddUpiId from "./Pages/AddUpiID";
 import SetupExpertProfile from "./Pages/SetupExpertProfile";
 import ChangePassword from "./Pages/ChangePassword";
+import AgencyLogin from "./Pages/AgencyLogin";
+import ExpertTable from "./Pages/ExpertTable";
+import AddAgencyExpert from "./Pages/AddAgencyExpert";
+import AgencyExpertJobCategory from "./Pages/AgencyExpertJobCategory";
+import AgencyExpertSubCategory from "./Pages/AgencyExpertSubCategory";
+import EditExpertProfile from "./Pages/EditExpertProfile";
+import EditJobCategory from "./Pages/EditJobCategory";
+import ReferAndEarn from "./Pages/ReferAndEarn";
 
 function AppRoutes() {
   const isAuthenticateds = isAuthenticated();
@@ -37,6 +45,14 @@ function AppRoutes() {
     {
       path: "/login",
       element: !isAuthenticateds ? <Login />:<Navigate to="/mybookings" /> ,
+    },
+    {
+      path: "/refer/earn",
+      element: isAuthenticateds ? <ReferAndEarn />:<Navigate to="/login" /> ,
+    },
+    {
+      path: "/agency/login",
+      element: !isAuthenticateds ? <AgencyLogin /> : <Navigate to="/agency/experts/all" />,
     },
     {
       path: "/forgotpassword",
@@ -55,6 +71,10 @@ function AppRoutes() {
       element: isAuthenticateds ? <JobCategory />:<Navigate to="/login" /> ,
     },
     {
+      path: "/edit/JobCategory",
+      element: isAuthenticateds ? <EditJobCategory />:<Navigate to="/login" /> ,
+    },
+    {
       path: "/subCategory",
       element: isAuthenticateds ? <SubCategory />:<Navigate to="/login" /> ,
     },
@@ -65,6 +85,22 @@ function AppRoutes() {
     {
       path: "/experts",
       element: isAuthenticateds ? <Experts />:<Navigate to="/login" /> ,
+    },
+    {
+      path: "/agency/experts/all",
+      element: isAuthenticateds ? <ExpertTable />:<Navigate to="/agency/login" /> ,
+    },
+    {
+      path: "/agency/add/expert",
+      element: isAuthenticateds ? <AddAgencyExpert />:<Navigate to="/agency/login" /> ,
+    },
+    {
+      path: "/agency/add/expert/jobCategory",
+      element: isAuthenticateds ? <AgencyExpertJobCategory /> : <Navigate to="/agency/login" /> ,
+    },
+    {
+      path: "/agency/add/expert/subCategory",
+      element: isAuthenticateds ? <AgencyExpertSubCategory /> : <Navigate to="/agency/login" /> ,
     },
     {
       path: "/mybookings",
@@ -89,6 +125,10 @@ function AppRoutes() {
     {
       path: "/Myprofile",
       element: isAuthenticateds ? isThisExpert ? <ExpertsProfile/>: <MyProfile />:<Navigate to="/login" /> ,
+    },
+    {
+      path: "/edit/Myprofile",
+      element: isAuthenticateds ? isThisExpert ? <EditExpertProfile/> : <MyProfile />:<Navigate to="/login" /> ,
     },
     {
       path: "/chat",

@@ -8,6 +8,7 @@ export const UserProvider = ({ children }) => {
   const [walletAmount, setWalletAmount] = useState();
   const [isExpertVerified, setExpertVerified] = useState();
   const [profileSetupData, setProfileSetupData] = useState();
+  const [preEditExpertData, setPreEditExpertData] = useState();
 
   return (
     <UserContext.Provider
@@ -23,7 +24,7 @@ export const UserProvider = ({ children }) => {
         isExpertVerified,
         setExpertVerified,
         profileSetupData,
-        setProfileSetupData,
+        setProfileSetupData,preEditExpertData, setPreEditExpertData
       }}
     >
       {children}

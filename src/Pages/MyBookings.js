@@ -21,12 +21,13 @@ import Axios from "axios";
 import { isExpert } from "../utils/authHelper";
 import { UserContext } from "../context/userContext";
 import { subscribeToNotifications } from "../helper/notification";
-import { getToken } from "firebase/messaging";
+import { getMessaging, getToken, onMessage } from 'firebase/messaging';
 import { messaging } from "../firebase/firebase";
+
 let tab = ["REQUESTED", "Upcoming", "Past"];
 const isThisExpert = isExpert();
 if (isThisExpert) {
-  tab = ["New", "Upcoming", "Past"];
+  tab = ["New", "Upcoming", "Past", "hjg"];
 }
 
 const MyBookings = () => {
@@ -85,27 +86,29 @@ const MyBookings = () => {
       handleClose();
     }
   };
-  useEffect(() => {
-    getToken(messaging, {
-      vapidKey: VAPID_KEY,
-    })
+
+  const getDeviceToken = async () => {
+    await getToken(messaging, { vapidKey: VAPID_KEY })
       .then((token) => {
         console.log(token);
       })
       .catch((err) => console.log(err));
-  }, []);
+  };
   useEffect(() => {
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker
-        .register("/firebase-messaging-sw.js")
-        .then((registration) => {
-          console.log("Service worker registered.");
-        })
-        .catch((error) => {
-          console.error("Service worker registration failed:", error);
-        });
-    }
+    getDeviceToken();
   }, []);
+  // useEffect(() => {
+  //   if ("serviceWorker" in navigator) {
+  //     navigator.serviceWorker
+  //       .register("/firebase-messaging-sw.js")
+  //       .then((registration) => {
+  //         console.log("Service worker registered.");
+  //       })
+  //       .catch((error) => {
+  //         console.error("Service worker registration failed:", error);
+  //       });
+  //   }
+  // }, []);
   return (
     <>
       <Header />
@@ -126,6 +129,7 @@ const MyBookings = () => {
                 return (
                   <Tab eventKey={item} key={index} title={item}>
                     {meetingData?.map((meet) => {
+                      console.log(meetingData.length, "length meeting")
                       return (
                         <div
                           onClick={() => navigate(`/bookingInfo/${meet._id}`)}
@@ -155,6 +159,8 @@ const MyBookings = () => {
                             onClickAccept={() => {
                               AcceptBooking(meet?._id);
                             }}
+                            amount={meet?.PaymentData?.totalAmount}
+                            meetingId={meet._id}
                           />
                         </div>
                       );

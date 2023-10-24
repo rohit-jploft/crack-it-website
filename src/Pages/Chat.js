@@ -1,7 +1,7 @@
 import "./../style.css";
 import Header from "./Header";
 import Container from "react-bootstrap/Container";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import Send from "./../Images/send.svg";
 import Bookingimg from "./../Images/booking-img.svg";
@@ -15,14 +15,19 @@ import {
 import { useEffect, useState, useRef } from "react";
 import { format, render, cancel, register } from "timeago.js";
 import Socket from "../data/socket";
-import { isExpert, isUser } from "../utils/authHelper";
+import { isExpert, isUser, isUserNameDisplay } from "../utils/authHelper";
 import FileInputIcon from "../components/FileInputIcon";
 import { BASE_URL } from "../constant";
+import pdfIcon from '../Images/pdf_icon.png'
+import { Button } from "react-bootstrap";
 const Chat = () => {
+  const navigate = useNavigate();
+
   const [selectedConversation, setSelectedConversation] = useState(null);
   const [newMessage, setNewMessage] = useState("");
   const [convoData, setConvoData] = useState(null);
   const [messages, setMessages] = useState([]);
+  const [messageSent, setMessageSent] = useState(false);
   const [conversations, setConversations] = useState([]);
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [search, setSearch] = useState("");
@@ -55,8 +60,9 @@ const Chat = () => {
 
   useEffect(() => {
     getConvoMessages();
+    setMessageSent(false);
     Socket.emit("join_room", selectedConversation);
-  }, [selectedConversation, Socket, newMsgObj]);
+  }, [selectedConversation, Socket, newMsgObj, messageSent]);
   useEffect(() => {
     getConvo();
   }, []);
@@ -116,9 +122,9 @@ const Chat = () => {
           chat: selectedConversation,
           content: messageText,
           sender: userId,
-          _id: res._id,
+          _id: res?._id,
         });
-
+        setMessageSent(true);
         setNewMessage("");
       })
       .catch((err) => {
@@ -143,15 +149,15 @@ const Chat = () => {
                   <div id="sidepanel">
                     <div id="contacts">
                       <ul>
-                        {conversations.map((conversation) => {
+                        {conversations?.map((conversation) => {
                           return (
                             <li
                               onClick={() => {
-                                handleConversationClick(conversation._id);
+                                handleConversationClick(conversation?._id);
                                 setConvoData(conversation);
                               }}
                               class={`contact ${
-                                selectedConversation === conversation._id
+                                selectedConversation === conversation?._id
                                   ? "active"
                                   : ""
                               }`}
@@ -161,9 +167,11 @@ const Chat = () => {
                                 <img src={Bookingimg} alt="img" />
                                 <div class="meta">
                                   <p class="name">
-                                    {isUser()
-                                      ? conversation.participants[0].firstName
-                                      : conversation.participants[1].firstName}
+                                    {isUserNameDisplay(
+                                      conversation?.participants[1]?._id
+                                    )
+                                      ? `${conversation?.participants[0]?.firstName} ${conversation?.participants[0]?.lastName}`
+                                      : `${conversation?.participants[1]?.firstName} ${conversation?.participants[1]?.lastName}`}
                                   </p>
                                   {/* <p class="preview">
                                   My progress getting better. Thank you
@@ -201,32 +209,135 @@ const Chat = () => {
                       {/* <p className="msg_date">September 15, 2022</p> */}
                       <ul>
                         {messages?.map((message) => {
-                          return message.type !== "file" ? (
-                            <li
-                              className={`sent ${
-                                message?.sender?._id === userId
-                                  ? "replies"
-                                  : "sent"
-                              }`}
-                              key={message?._id}
-                            >
-                              <p>{message?.content}</p>
-                              <h6>{format(message?.createdAt)}</h6>
-                            </li>
-                          ) : (
-                            <li
-                              className={`sent ${
-                                message?.sender?._id === userId
-                                  ? "replies"
-                                  : "sent"
-                              }`}
-                            >
-                              <audio
-                                src={`${BASE_URL}${message?.media}`}
-                                controls
-                              />
-                            </li>
-                          );
+                          const checkType = message.type;
+                          const fileType =
+                            message.type && message.type !== "text"
+                              ? checkType?.split("/")[0]
+                              : message.type;
+                          console.log(fileType);
+
+                          if (fileType == "image") {
+                            console.log("yes");
+                            const imgurl = `${BASE_URL}${message?.media}`;
+                            console.log(imgurl);
+                            return (
+                              <li
+                                className={`sent ${
+                                  message?.sender?._id === userId
+                                    ? "replies"
+                                    : "sent"
+                                }`}
+                                key={message?._id}
+                                style={{
+                                  marginTop: "10px",
+                                  marginBottom: "10px",
+                                }}
+                              >
+                                {/* <h6>{format(message?.createdAt)}</h6> */}
+
+                                <img
+                                  alt="image"
+                                  src={imgurl}
+                                  onClick={() => {
+                                    window.open(
+                                      `${BASE_URL}${message?.media}`,
+                                      "_blank"
+                                    );
+                                  }}
+                                  style={{
+                                    width: "200px",
+                                    height: "120px",
+                                    borderRadius: 0,
+                                  }}
+                                />
+                              </li>
+                            );
+                          }
+                          if (fileType == "audio") {
+                            return (
+                              <li
+                                className={`sent ${
+                                  message?.sender?._id === userId
+                                    ? "replies"
+                                    : "sent"
+                                }`}
+                                key={message?._id}
+                              >
+                                <audio
+                                  src={`${BASE_URL}${message?.media}`}
+                                  controls
+                                />
+                                <h6>{format(message?.createdAt)}</h6>
+                              </li>
+                            );
+                          }
+                          if (message.type == "application/pdf") {
+                            return (
+                              <li
+                                className={`sent ${
+                                  message?.sender?._id === userId
+                                    ? "replies"
+                                    : "sent"
+                                }`}
+                                key={message?._id}
+                              >
+                                <button
+                                  onClick={() =>
+                                    window.open(
+                                      `${BASE_URL}${message?.media}`,
+                                      "_blank"
+                                    )
+                                  }
+                                  style={{ width: "130px", color:'grey', padding:'12px', border:0 }}
+                                >
+                                  <img alt="pdf-icon" src={pdfIcon}/>
+                                  Open File
+                                </button>
+                                <h6>{format(message?.createdAt)}</h6>
+                              </li>
+                            );
+                          }
+                          if (message.type == "text") {
+                            return (
+                              <li
+                                className={`sent ${
+                                  message?.sender?._id === userId
+                                    ? "replies"
+                                    : "sent"
+                                }`}
+                                key={message?._id}
+                              >
+                                <p>{message?.content}</p>
+                                <h6>{format(message?.createdAt)}</h6>
+                              </li>
+                            );
+                          }
+                          // return fileType == "image" ? (
+                          //   <li
+                          //     className={`sent ${
+                          //       message?.sender?._id === userId
+                          //         ? "replies"
+                          //         : "sent"
+                          //     }`}
+                          //     key={message?._id}
+                          //   >
+                          //     <p>{message?.content}</p>
+                          //     <h6>{format(message?.createdAt)}</h6>
+                          //   </li>
+                          // ) : (
+                          //   <li
+                          //     className={`sent ${
+                          //       message?.sender?._id === userId
+                          //         ? "replies"
+                          //         : "sent"
+                          //     }`}
+                          //   >
+                          //     <audio
+                          //       src={`${BASE_URL}${message?.media}`}
+                          //       controls
+                          //     />
+                          //   </li>
+                          // );
                         })}
                         {/* <audio src="http://localhost:4000/uploads/chat/audio-1696488297171.mp3" /> */}
                       </ul>

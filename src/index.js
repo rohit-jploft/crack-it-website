@@ -5,13 +5,16 @@ import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import { BookingProvider } from "./context/bookingContext";
 import { UserProvider } from "./context/userContext";
+import { AgencyContext, AgencyProvider } from "./context/agencyContext";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
     <BookingProvider>
       <UserProvider>
-        <App />
+        <AgencyProvider>
+          <App />
+        </AgencyProvider>
       </UserProvider>
     </BookingProvider>
   </React.StrictMode>

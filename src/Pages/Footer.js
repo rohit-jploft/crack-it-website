@@ -3,7 +3,7 @@ import Logo from './../Images/logo.png';
 import Up_arrow from './../Images/up-right-arrow.svg';
 import Container from 'react-bootstrap/Container';
 
-const Footer = () => {
+const Footer = ({setModal}) => {
   return (
     <>
       <div className='footer'>
@@ -13,7 +13,7 @@ const Footer = () => {
                   <img src={Logo} alt="Logo" />
               </div>
               <div>
-                <button className="btn_green">Let's Talk</button>
+                <button className="btn_green" onClick={() => setModal(true)}>Let's Talk</button>
                 <div className="ftr-login">
                   <p className="title">Expert Login <img src={Up_arrow} alt="Up arrow" /></p>
                   <p>+1 (000) 547-5487</p>

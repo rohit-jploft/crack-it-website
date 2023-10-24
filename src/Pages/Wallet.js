@@ -35,7 +35,7 @@ const Wallet = () => {
   useEffect(() => {
     getWalletData();
     getAllWithdrawalReq();
-  }, []);
+  }, [key]);
   useEffect(() => {
     setWalletAmount(walletData?.wallet?.amounst);
   }, []);

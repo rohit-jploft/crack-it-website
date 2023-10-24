@@ -3,7 +3,7 @@ import Bookingimg from "./../Images/booking-img.svg";
 import { useNavigate } from "react-router-dom";
 import { isExpert } from "../utils/authHelper";
 import { loadStripe } from "@stripe/stripe-js";
-import { BASE_URL } from "../constant";
+import { BASE_URL, STRIPE_PUBLIC_KEY } from "../constant";
 const BookingListItem = ({
   startTime,
   endTime,
@@ -19,14 +19,19 @@ const BookingListItem = ({
   onClickAccept,
   onClickDecline,
   status,
+  amount,
+  meetingId,
 }) => {
   const navigate = useNavigate();
   const isThisExpert = isExpert();
-  const makePayment = async()=>{
-    const stripe = await loadStripe("ENTER YOUR PUBLISHABLE KEY");
+  const makePayment = async(amount,meetingId)=>{
+    const stripe = await loadStripe(STRIPE_PUBLIC_KEY);
 
    try {
-    const body = {}
+    const body = {
+      amount:amount,
+      meetingId:meetingId
+    }
     const headers = {
         "Content-Type":"application/json"
     }
@@ -89,9 +94,9 @@ const BookingListItem = ({
           <button
             className="btn_bg"
             onClick={(e) => {
-              e.stopPropagation();
-            //   onClickCancel();
-            makePayment()
+            //   e.stopPropagation();
+            // //   onClickCancel();
+            // makePayment(amount,meetingId)
             // navigate('/payment')
             }}
             variant="primary"

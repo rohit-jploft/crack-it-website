@@ -162,6 +162,10 @@ const Header = () => {
                   <img src={Chats} alt="" />
                   Change Password
                 </NavDropdown.Item>
+                <NavDropdown.Item href="/refer/earn">
+                  <img src={Chats} alt="" />
+                  Refer & Earn
+                </NavDropdown.Item>
                 <NavDropdown.Item
                   onClick={() => {
                     localStorage.removeItem("token");
