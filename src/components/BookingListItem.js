@@ -1,7 +1,7 @@
 import Time from "./../Images/time.svg";
 import Bookingimg from "./../Images/booking-img.svg";
 import { useNavigate } from "react-router-dom";
-import { isExpert } from "../utils/authHelper";
+import { isAgency, isExpert, isUser } from "../utils/authHelper";
 import { loadStripe } from "@stripe/stripe-js";
 import { BASE_URL, STRIPE_PUBLIC_KEY } from "../constant";
 const BookingListItem = ({
@@ -24,6 +24,8 @@ const BookingListItem = ({
 }) => {
   const navigate = useNavigate();
   const isThisExpert = isExpert();
+  const isThisAgency = isAgency();
+  const isThisUser = isUser();
   const makePayment = async(amount,meetingId)=>{
     const stripe = await loadStripe(STRIPE_PUBLIC_KEY);
 
@@ -90,7 +92,8 @@ const BookingListItem = ({
             Cancel
           </button>
         )}
-        {!isThisExpert && status === "ACCEPTED" && (
+     
+        {isThisUser && !isThisExpert & !isThisAgency && status === "ACCEPTED" && (
           <button
             className="btn_bg"
             onClick={(e) => {
@@ -116,7 +119,7 @@ const BookingListItem = ({
             Cancel
           </button>
         )}
-        {isThisExpert && status === "REQUESTED" && (
+        {isThisExpert   && status === "REQUESTED" && (
           <button
             className="btn_bg"
             onClick={(e) => {
@@ -127,7 +130,7 @@ const BookingListItem = ({
             Accept
           </button>
         )}
-        {isThisExpert && status === "REQUESTED" && (
+        {isThisExpert  && status === "REQUESTED" && (
           <button
             className="btn_border"
             onClick={(e) => {

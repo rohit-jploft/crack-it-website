@@ -15,7 +15,11 @@ import { useContext, useEffect, useState } from "react";
 import { UserContext } from "../context/userContext";
 import Axios from "axios";
 import { BASE_URL } from "../constant";
+import "react-toastify/dist/ReactToastify.css";
 import Header from "./Header";
+import { getCategoryList } from "../data/booking";
+import { ToastContainer, toast } from "react-toastify";
+import { updateExpertProfile } from "../data/experts";
 const validationSchema = Yup.object().shape({
   firstName: Yup.string().required("First Name is required"),
   lastName: Yup.string().required("Last Name is required"),
@@ -29,6 +33,8 @@ const validationSchema = Yup.object().shape({
       "Phone number must be exactly 10 digits"
     ),
   experience: Yup.number().required("experience is required"),
+  jobCategory: Yup.string().required("job category is required"),
+  subCategory: Yup.string().required(),
   description: Yup.string()
     .min(100, "Description should minimum length of 100")
     .required("Description is required"),
@@ -40,12 +46,18 @@ const validationSchema = Yup.object().shape({
 const EditExpertProfile = () => {
   const navigate = useNavigate();
   const [userData, setUserData] = useState();
+  const [jobCategoryList, setJobCategoryList] = useState();
+  const [skillsData, setSkillsData] = useState();
+  const [subCategoryList, setSubCategoryList] = useState();
+  const [storeSkills, setStoreSkills] = useState([]);
   const {
     profileSetupData,
     setProfileSetupData,
     preEditExpertData,
     setPreEditExpertData,
   } = useContext(UserContext);
+  const userId = localStorage.getItem("userId");
+
   const formik = useFormik({
     initialValues: {
       firstName: "",
@@ -55,14 +67,38 @@ const EditExpertProfile = () => {
       description: "",
       experience: "",
       price: "",
+      jobCategory: "",
+      subCategory: "",
       languages: [],
     },
-    onSubmit: (values) => {
-      // Handle form submission here
-      setProfileSetupData(values);
-      navigate("/edit/JobCategory");
-    //   navigate("/myprofile");
-      console.log(values);
+    onSubmit: async (values) => {
+      if (storeSkills.length === 0) {
+        toast.error("please select atleast one skill");
+      } else {
+        console.log("entered api call update wali");
+        // Handle form submission here
+        const data = await updateExpertProfile(userId, {
+          description: values?.description,
+          jobCategory: values?.jobCategory,
+          price: values?.price,
+          expertise: storeSkills,
+          language: values?.languages,
+          experience: values?.experience,
+        });
+        // console.log(data);
+        if (data && data.success && data.status === 200) {
+          toast.success(data.message, { autoClose: 500 });
+          setTimeout(() => {
+            navigate("/MyProfile");
+          }, 600);
+        } else {
+          toast.error("Something went wrong");
+        }
+
+        //   setProfileSetupData(values);
+        //   navigate("/edit/JobCategory");
+        //   navigate("/myprofile");
+      }
     },
     validationSchema,
   });
@@ -83,7 +119,6 @@ const EditExpertProfile = () => {
   };
   const getUserData = async () => {
     const token = localStorage.getItem("token");
-    const userId = localStorage.getItem("userId");
     const res = await Axios.get(`${BASE_URL}expert/get/profile/${userId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -100,22 +135,80 @@ const EditExpertProfile = () => {
       formik.setFieldValue("description", res.data.data?.expert?.description);
       formik.setFieldValue("price", res.data.data?.expert?.price);
       formik.setFieldValue("experience", res.data.data?.expert?.experience);
+      console.log(
+        "job category when selected",
+        res.data.data?.expert?.jobCategory?._id
+      );
+      formik.setFieldValue(
+        "jobCategory",
+        res.data.data?.expert?.jobCategory?._id
+      );
+      let skilArr = [];
+      for (let ski of res.data.data?.expert?.expertise) {
+        skilArr.push(ski._id);
+      }
+      setStoreSkills(skilArr);
       formik.setFieldValue("languages", res.data.data?.expert?.languages);
     }
   };
+
+  const getJobCateList = async () => {
+    const res = await getCategoryList();
+    setJobCategoryList(res?.data);
+    console.log("cat list", res);
+  };
+  const getSubCateList = async () => {
+    if (formik.values.jobCategory) {
+      const res = await getCategoryList(formik.values.jobCategory);
+      setSubCategoryList(res?.data);
+      formik.setFieldValue("subCategory", res?.data[0]._id);
+      console.log("sub cat list", res);
+    }
+  };
+  const getSkills = async () => {
+    if (formik.values.subCategory) {
+      const res = await getCategoryList(formik.values.subCategory);
+      setSkillsData(res?.data);
+      console.log("skills list", res);
+    }
+  };
+  function toggleSkillInArray(array, str) {
+    let newArr = [...array];
+    const index = array.indexOf(str);
+
+    console.log("array, str", array, str);
+    if (index === -1) {
+      // String doesn't exist in the array, so add it
+      newArr.push(str);
+      setStoreSkills(newArr);
+    } else {
+      // String already exists in the array, so remove it
+      newArr.splice(index, 1);
+      setStoreSkills(newArr);
+    }
+  }
   useEffect(() => {
     getUserData();
+    getJobCateList();
   }, []);
-  
+  useEffect(() => {
+    setStoreSkills([]);
+    getSubCateList();
+  }, [formik.values.jobCategory]);
+  useEffect(() => {
+    getSkills();
+  }, [formik.values.subCategory]);
+
   return (
     <>
+      <ToastContainer />
       <Header />
       <section
         className="main_sect"
         style={{ display: "flex", justifyContent: "center" }}
       >
         <div className="content-left">
-          <div className="signup-form form_sect">
+          <div className="signup-form form_sect add_expert_form">
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -234,6 +327,110 @@ const EditExpertProfile = () => {
                   </div>
                 </div>
                 <div className="col-md-6">
+                  <div className="input-field">
+                    <label
+                      for="exampleFormControlInput1"
+                      className="form-label"
+                    >
+                      Select Job Category
+                    </label>
+                    <select
+                      name="jobCategory"
+                      value={formik.values.jobCategory}
+                      onChange={formik.handleChange}
+                      className="form-control"
+                      id=""
+                    >
+                      {jobCategoryList?.map((cat) => {
+                        return (
+                          <option key={cat?._id} value={cat?._id}>
+                            {cat?.title}
+                          </option>
+                        );
+                      })}
+                    </select>
+                  </div>
+                  {formik.touched.jobCategory &&
+                    Boolean(formik.errors.jobCategory) && (
+                      <div
+                        style={{
+                          color: "red",
+                          textAlign: "left",
+                          marginLeft: "9px",
+                          fontSize: "13px",
+                          // marginTop: "0px",
+                        }}
+                      >
+                        <span>
+                          {formik.touched.jobCategory &&
+                            formik.errors.jobCategory}
+                        </span>
+                      </div>
+                    )}
+                </div>
+                <div className="col-md-6">
+                  <div className="input-field">
+                    <label
+                      for="exampleFormControlInput1"
+                      className="form-label"
+                    >
+                      Select Sub Category
+                    </label>
+                    <select
+                      name="subCategory"
+                      value={formik.values.subCategory}
+                      onChange={formik.handleChange}
+                      className="form-control"
+                      id=""
+                    >
+                      {subCategoryList?.map((cat) => {
+                        return (
+                          <option key={cat?._id} value={cat?._id}>
+                            {cat?.title}
+                          </option>
+                        );
+                      })}
+                    </select>
+                  </div>
+                  {formik.touched.subCategory &&
+                    Boolean(formik.errors.subCategory) && (
+                      <div
+                        style={{
+                          color: "red",
+                          textAlign: "left",
+                          marginLeft: "9px",
+                          fontSize: "13px",
+                          // marginTop: "0px",
+                        }}
+                      >
+                        <span>
+                          {formik.touched.subCategory &&
+                            formik.errors.subCategory}
+                        </span>
+                      </div>
+                    )}
+                </div>
+                <div className="col-md-12">
+                  <h6> Select Skills</h6>
+                  <div className="categ-technology">
+                    {skillsData?.map((skil) => {
+                      return (
+                        <div
+                          class={`techno ${
+                            storeSkills?.includes(skil?._id) ? "active" : ""
+                          }`}
+                          onClick={() =>
+                            toggleSkillInArray(storeSkills, skil._id)
+                          }
+                          style={{ cursor: "pointer" }}
+                        >
+                          {skil?.title}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+                <div className="col-md-6">
                   <div class="input-field price">
                     <TextInput
                       label="Price"
@@ -277,7 +474,9 @@ const EditExpertProfile = () => {
                                 type="checkbox"
                                 id=""
                                 name="languages"
-                                checked={formik.values.languages.includes(lang)}
+                                checked={formik?.values?.languages?.includes(
+                                  lang
+                                )}
                                 onChange={(e) => handleCheckboxChange(e, lang)}
                               />
                               <label for="">{lang}</label>

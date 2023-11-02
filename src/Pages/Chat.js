@@ -1,7 +1,7 @@
 import "./../style.css";
 import Header from "./Header";
 import Container from "react-bootstrap/Container";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 
 import Send from "./../Images/send.svg";
 import Bookingimg from "./../Images/booking-img.svg";
@@ -22,8 +22,9 @@ import pdfIcon from '../Images/pdf_icon.png'
 import { Button } from "react-bootstrap";
 const Chat = () => {
   const navigate = useNavigate();
+  const {convoId} = useParams()
 
-  const [selectedConversation, setSelectedConversation] = useState(null);
+  const [selectedConversation, setSelectedConversation] = useState(convoId || null);
   const [newMessage, setNewMessage] = useState("");
   const [convoData, setConvoData] = useState(null);
   const [messages, setMessages] = useState([]);

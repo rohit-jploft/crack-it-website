@@ -2428,3 +2428,27 @@ color: #000000;
     padding: 10px 15px;
     margin: 30px 0 60px;
 }
+
+.add_expert_form{
+  margin-top: 40%;
+}
+/* phone input css  */
+.phone-number-fils {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 81%;
+  height: 100%;
+}
+.phone-number-fils input {
+  border: 0;
+  height: 100%;
+  padding: 17px 0;
+  border-width: 0;
+}
+.phone-number-fils fieldset {
+  border-color: transparent !important;
+}
+.country-selector {
+  left: 0 !important;
+}

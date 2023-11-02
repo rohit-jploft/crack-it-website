@@ -13,7 +13,7 @@ import Bookingimg2 from "./../Images/booking-img2.svg";
 import Cancelicon from "./../Images/cancel-icon.svg";
 import { ToastContainer, toast } from "react-toastify";
 import BookingListItem from "../components/BookingListItem";
-import { getAllmeetings } from "../data/booking";
+import { getAllAgencymeetings, getAllmeetings } from "../data/booking";
 import { getDayName, getTimeFromTimestamps } from "../helper/helper";
 import { BASE_URL, VAPID_KEY } from "../constant";
 import "react-toastify/dist/ReactToastify.css";
@@ -23,19 +23,13 @@ import { UserContext } from "../context/userContext";
 import { subscribeToNotifications } from "../helper/notification";
 import { getMessaging, getToken, onMessage } from "firebase/messaging";
 import { messaging } from "../firebase/firebase";
-import { getChatIdFromMeeting } from "../data/chat";
+import { enterChatAgency } from "../data/chat";
 
-let tab = ["REQUESTED", "Upcoming", "Past"];
-const isThisExpert = isExpert();
-if (isThisExpert) {
-  tab = ["New", "Upcoming", "Past", "hjg"];
-}
-
-const MyBookings = () => {
+const AgencyExpertBooking = () => {
   const { isExpertVerified, setExpertVerified } = useContext(UserContext);
   const [tabArray, setTabArray] = useState(["Requested", "Upcoming", "Past"]);
   const navigate = useNavigate();
-  const { tabKey } = useParams();
+  const { tabKey, agencyExpertUserId } = useParams();
   const [show, setShow] = useState(false);
   const [bookingCancelId, setBookingCancelId] = useState();
   const [cancelDone, setCancelDone] = useState(false);
@@ -45,16 +39,11 @@ const MyBookings = () => {
 
   const [key, setKey] = useState(tabKey ? tabKey : "Upcoming");
   const getData = async () => {
-    const res = await getAllmeetings(key);
+    const res = await getAllAgencymeetings(key, agencyExpertUserId);
     console.log(res, "meetings");
     setMeetingData(res.data);
   };
 
-  useEffect(() => {
-    if (isThisExpert) {
-      setTabArray(["Requested", "Upcoming", "Past"]);
-    }
-  }, []);
   useEffect(() => {
     setCancelDone(false);
     getData();
@@ -98,17 +87,23 @@ const MyBookings = () => {
   useEffect(() => {
     getDeviceToken();
   }, []);
-
-
+  // useEffect(() => {
+  //   if ("serviceWorker" in navigator) {
+  //     navigator.serviceWorker
+  //       .register("/firebase-messaging-sw.js")
+  //       .then((registration) => {
+  //         console.log("Service worker registered.");
+  //       })
+  //       .catch((error) => {
+  //         console.error("Service worker registration failed:", error);
+  //       });
+  //   }
+  // }, []);
   const clickChatRedirect = async (bookingId) => {
     const role = localStorage.getItem("role");
-    
-    if (role !== "AGENCY") {
-      const res = await getChatIdFromMeeting(bookingId);
+    if (role === "AGENCY") {
+      const res = await enterChatAgency(bookingId);
       console.log(res);
-      if(res && !res.success){
-        toast.error(res.message)
-      }
       if (res && res.data && res.data.chat) {
         console.log(res.data.chat);
         navigate(`/chat/${res.data.chat}`);
@@ -209,4 +204,4 @@ const MyBookings = () => {
   );
 };
 
-export default MyBookings;
+export default AgencyExpertBooking;

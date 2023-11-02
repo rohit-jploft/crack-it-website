@@ -7,8 +7,12 @@ import Facebook from "./../Images/facebook.svg";
 import Twitter from "./../Images/twitter.svg";
 import Msg from "./../Images/msg-1.svg";
 import Copy from "./../Images/copy.svg";
-import { Link } from 'react-router-dom';
+import { Link , useLocation} from 'react-router-dom';
  const ReferAndEarn = () => {
+  const userId = localStorage.getItem('userId')
+  const match = useLocation();
+  console.log(match)
+
   return (
     <div>
          <Header />
@@ -31,7 +35,7 @@ import { Link } from 'react-router-dom';
                 
             </div>
             <div className='input-copy'>
-                <p>https://crack-it.com/s/mjhgf <img src={Copy}/></p>
+                <p>{`${match.pathname}refer/earn/signup/${userId}`}<img src={Copy}/></p>
             </div>
         </div>
         </Container>

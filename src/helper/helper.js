@@ -59,3 +59,13 @@ export function convertTimeToJsDate(time) {
       return null; // Invalid time format
     }
   }
+ export function objectToFormData(obj) {
+    const formData = new FormData();
+    for (const key in obj) {
+      if (obj.hasOwnProperty(key)) {
+        formData.append(key, obj[key]);
+      }
+    }
+    console.log(formData, "form data")
+    return formData;
+  }

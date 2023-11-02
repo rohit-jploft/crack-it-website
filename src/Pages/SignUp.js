@@ -14,7 +14,8 @@ import * as Yup from "yup"; // Import Yup for validation
 import { createUser } from "../data/user";
 import { TextField } from "@mui/material";
 import TextInput from "../components/InputField";
-import ExpertImg from './../Images/expert-img.svg';
+import PhoneInput from "react-phone-input-2";
+
 
 const validationSchema = Yup.object().shape({
   firstName: Yup.string().required("First Name is required"),
@@ -53,6 +54,7 @@ const Signup = (props) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [dailCode, setDialCode] = useState();
+  
   const formik = useFormik({
     initialValues: {
       firstName: "",
@@ -140,6 +142,44 @@ const Signup = (props) => {
                     error={formik.touched.phone && Boolean(formik.errors.phone)}
                     helperText={formik.touched.phone && formik.errors.phone}
                   />
+                  {/* <PhoneInput
+                  country={'in'}
+                  className="country-selector"
+                  
+                  enableSearch
+                  name="phone"
+                  inputProps={{
+                    name: 'phone',
+                  }}
+                  value={`+${dailCode}`}
+                  onKeyDown={(e) => e.preventDefault()}
+                  onChange={(phone, e) => {
+                    console.log('phone', phone);
+                    console.log('e', e);
+                    setDialCode(e.dialCode);
+                    // setMobileNumberCountryCode(phone)
+
+                    // setFieldValue("mobilenumberCountryCode", phone);
+                  }}
+                />
+                <div className="phone-number-fils">
+                  <TextInput
+                    name="phone"
+                    type="number"
+                  
+                   
+                    {...formik.getFieldProps('phone')}
+                    onChange={(e)=>{
+                      if (e.target.value.toString().length <= 10) {
+                        formik.handleChange(e)
+                      }
+                      
+                    }}
+                    value={formik.values.phone}
+                    error={formik.touched.phone && Boolean(formik.errors.phone)}
+                    helperText={formik.touched.phone && formik.errors.phone}
+                  />
+                </div> */}
                 </div>
                 <div className="col-md-6">
                   <TextInput

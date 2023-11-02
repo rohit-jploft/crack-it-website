@@ -17,49 +17,25 @@ import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import Edit from "./../Images/edit.svg";
 import Cancelicon from "./../Images/cancel-icon.svg";
-const ExpertsProfile = () => {
-  const { userId } = useParams();
+import { BASE_URL } from "../constant";
+const AgencyExpertProfile = () => {
+  const { agencyExpertUserId } = useParams();
   const navigate = useNavigate();
   const [show, setShow] = useState(false);
   const handleClose1 = () => setShow(false);
   const handleShow1 = () => setShow(true);
-  const loggedUserId = localStorage.getItem("userId");
   const role = localStorage.getItem("role");
 
   const { getReqData, time } = useContext(BookingContext);
   const [profileData, setProfileData] = useState();
 
   const getExpertData = async () => {
-    const data =
-      role === "EXPERT"
-        ? await getExpertProfile(userId ? userId : loggedUserId)
-        : await getAgencyProfile(userId ? userId : loggedUserId);
+    const data = await getExpertProfile(agencyExpertUserId)
+  
     setProfileData(data.data);
     console.log(data, "profile data");
   };
-  const onBookingExperts = async (e) => {
-    e.preventDefault();
-
-    const loggedUserId = localStorage.getItem("userId");
-    await createBooking({
-      ...getReqData,
-      startTime: time + ":00",
-      user: loggedUserId,
-      expert: userId,
-    })
-      .then((result) => {
-        if (result && result.status === 200 && result.message) {
-          toast(result.message, { type: "success" });
-        }
-        if (result && result.status === 203 && result.type === "error") {
-          toast(result.message, { type: "error" });
-        }
-        console.log(result);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  };
+ 
   useEffect(() => {
     getExpertData();
   }, []);
@@ -75,14 +51,12 @@ const ExpertsProfile = () => {
                 <h3>Profile</h3>
                 <div className="expertprofile-detail">
                   <div className="expert-image">
-                    <img src={ExpertImg} alt="Img" />
+                    <img src={profileData?.expert.user.profilePhoto ? `${BASE_URL}${profileData?.expert.user.profilePhoto}`: ExpertImg} alt="Img" />
                   </div>
                   <h2>
-                    {role === "EXPERT" && profileData?.expert.user.firstName}{" "}
-                    {role === "EXPERT" && profileData?.expert?.user?.lastName}
-                    {role === "AGENCY" &&
-                      profileData?.expert?.agency?.agencyName}
-                    {/* {role === 'AGENCY' && profileData?.} */}
+                    { profileData?.expert.user.firstName}{" "}
+                    { profileData?.expert?.user?.lastName}
+                   
                   </h2>
                   <p>{profileData?.expert.jobCategory.title}</p>
                 </div>
@@ -131,89 +105,15 @@ const ExpertsProfile = () => {
                     </div>
                   </div>
                 </div>
-                {role !== "AGENCY" && (
+                
                   <div className="expert-price">
                     <h4>
                       ${profileData?.expert?.price}
                       <span>/ hr</span>
                     </h4>
                   </div>
-                )}
-                {role === "AGENCY" &&
-                  profileData?.expert.agency._id.toString() ===
-                    loggedUserId?.toString() && (
-                    <div className="text-center">
-                      {/* <Link to="/Wallet"> */}
-
-                      <button
-                        onClick={() => navigate("/edit/agency/Myprofile")}
-                        className="btn_continue"
-                        style={{ width: "300px", height: "40px" }}
-                      >
-                        EDIT
-                      </button>
-
-                      {/* </Link> */}
-                    </div>
-                  )}
-                {role === "EXPERT" &&
-                  profileData?.expert.user._id.toString() ===
-                    loggedUserId?.toString() && (
-                    <div className="text-center">
-                      {/* <Link to="/Wallet"> */}
-
-                      <button
-                        onClick={() => navigate("/edit/Myprofile")}
-                        className="btn_continue"
-                        style={{ width: "300px", height: "40px" }}
-                      >
-                        EDIT
-                      </button>
-
-                      {/* </Link> */}
-                    </div>
-                  )}
-                {userId && (
-                  <div className="text-center">
-                    {/* <Link to="/Wallet"> */}
-
-                    <button
-                      onClick={(e) => onBookingExperts(e)}
-                      className="btn_continue"
-                    >
-                      REQUEST
-                    </button>
-
-                    {/* </Link> */}
-                  </div>
-                )}
-                {!userId && (
-                  <div className="expert-actions">
-                    <Button
-                      className="profile-action"
-                      onClick={() => navigate("/mybookings/Past")}
-                    >
-                      Booking History <img src={RightArrow} alt="img" />
-                    </Button>
-                    <Button className="profile-action" onClick={handleShow1}>
-                      Delete Account <img src={RightArrow} alt="img" />
-                    </Button>
-                  </div>
-                )}
-                {!userId && (
-                  <div
-                    className="text-center logout"
-                    style={{ cursor: "pointer" }}
-                    onClick={() => {
-                      localStorage.removeItem("token");
-                      localStorage.removeItem("userId");
-                      localStorage.removeItem("role");
-                      navigate("/login");
-                    }}
-                  >
-                    <img src={Logout2} alt="img" /> Logout
-                  </div>
-                )}
+     
+                
               </div>
             </div>
           </div>
@@ -238,4 +138,4 @@ const ExpertsProfile = () => {
   );
 };
 
-export default ExpertsProfile;
+export default AgencyExpertProfile;

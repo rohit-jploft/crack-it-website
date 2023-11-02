@@ -1,5 +1,7 @@
-import { Outlet, Link, useNavigate } from "react-router-dom";
+import { Outlet, Link, useNavigate, redirect } from "react-router-dom";
 import Container from "react-bootstrap/Container";
+import Badge from "@mui/material/Badge";
+
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
@@ -14,12 +16,15 @@ import ProfileH from "./../Images/profile.png";
 import DownArrow from "./../Images/down_Arrow.svg";
 import Axios from "axios";
 import { BASE_URL } from "../constant";
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import { UserContext } from "../context/userContext";
 import { isUser } from "../utils/authHelper";
+import { format } from "timeago.js";
 const Header = () => {
   const navigate = useNavigate();
   const { profileData, setProfileData } = useContext(UserContext);
+  const [userNotificationData, setuserNotificationData] = useState();
+  const [unReadCount, setUnReadCount] = useState();
   const getUserData = async () => {
     const token = localStorage.getItem("token");
     const res = await Axios.get(`${BASE_URL}auth/user/detail`, {
@@ -27,16 +32,37 @@ const Header = () => {
         Authorization: `Bearer ${token}`,
       },
     });
-    if (res.data.data) {
-      console.log(res.data.data);
+    if (res && res.data.data) {
       setProfileData(res.data.data);
+    }
+  };
+
+  const getAllNotificationOfUser = async () => {
+    const userId = localStorage.getItem("userId");
+    try {
+      const res = await Axios.get(`${BASE_URL}notification/get-all/${userId}`);
+      setuserNotificationData(res?.data?.data?.data);
+      setUnReadCount(res?.data?.data?.unReadCount);
+      return res;
+    } catch (error) {
+      return error;
     }
   };
   useEffect(() => {
     getUserData();
+    getAllNotificationOfUser();
   }, []);
-  const isTheUser = isUser()
-  console.log(isTheUser," isTheUser")
+  const isTheUser = isUser();
+  const role = localStorage.getItem("role");
+  console.log(isTheUser, " isTheUser");
+
+  const redirectThroughNotification = async (notiId, data, isRead) => {
+    console.log(notiId, "noti id");
+    if (!isRead) {
+      const res = await Axios.put(`${BASE_URL}notification/read/${notiId}`);
+    }
+    navigate(`/bookingInfo/${data.targetId}`);
+  };
   return (
     <>
       <Navbar expand="lg" className="nav_sect">
@@ -55,81 +81,48 @@ const Header = () => {
                 </Nav.Link>
               )}
               <NavDropdown
-                title={<img src={Notification} alt="Logo" />}
+                title={
+                  <Badge badgeContent={unReadCount} color="error">
+                    <img src={Notification} alt="Logo" />
+                  </Badge>
+                }
                 id="notifiaction-dropdown"
                 className="notification-menu"
               >
-                <NavDropdown.Item href="#">
-                  <div className="notif_msg">
-                    <div>
-                      <h3>Booking Confirmed</h3>
-                      <p>It is a long established fact that a reader will be</p>
-                    </div>
-                    <div>
-                      <h6>9:27 AM</h6>
-                    </div>
-                  </div>
-                </NavDropdown.Item>
-                <NavDropdown.Item href="#">
-                  <div className="notif_msg">
-                    <div>
-                      <h3>Invitation accepted</h3>
-                      <p>It is a long established fact that a reader will be</p>
-                    </div>
-                    <div>
-                      <h6>9:27 AM</h6>
-                    </div>
-                  </div>
-                </NavDropdown.Item>
-                <NavDropdown.Item href="#">
-                  <div className="notif_msg">
-                    <div>
-                      <h3>Booking Confirmed</h3>
-                      <p>It is a long established fact that a reader will be</p>
-                    </div>
-                    <div>
-                      <h6>Yesterday</h6>
-                    </div>
-                  </div>
-                </NavDropdown.Item>
-                <NavDropdown.Item href="#">
-                  <div className="notif_msg">
-                    <div>
-                      <h3>Invitation accepted</h3>
-                      <p>It is a long established fact that a reader will be</p>
-                    </div>
-                    <div>
-                      <h6>Yesterday</h6>
-                    </div>
-                  </div>
-                </NavDropdown.Item>
-                <NavDropdown.Item href="#">
-                  <div className="notif_msg">
-                    <div>
-                      <h3>Booking Confirmed</h3>
-                      <p>It is a long established fact that a reader will be</p>
-                    </div>
-                    <div>
-                      <h6>Yesterday</h6>
-                    </div>
-                  </div>
-                </NavDropdown.Item>
-                <NavDropdown.Item href="#">
-                  <div className="notif_msg">
-                    <div>
-                      <h3>Invitation accepted</h3>
-                      <p>It is a long established fact that a reader will be</p>
-                    </div>
-                    <div>
-                      <h6>Yesterday</h6>
-                    </div>
-                  </div>
-                </NavDropdown.Item>
+                {userNotificationData &&
+                  userNotificationData.map((noti) => {
+                    return (
+                      <NavDropdown.Item style={{backgroundColor:noti?.isRead ? 'white' : '#D3D3D3'}}>
+                        <div
+                          className="notif_msg"
+                          onClick={() =>
+                            redirectThroughNotification(
+                              noti?._id,
+                              noti?.data,
+                              noti?.isRead
+                            )
+                          }
+                        >
+                          <div>
+                            <h3>{noti?.title}</h3>
+                            <p>{noti?.message}</p>
+                          </div>
+                          <div>
+                            <h6>{format(noti?.createdAt)}</h6>
+                          </div>
+                        </div>
+                      </NavDropdown.Item>
+                    );
+                  })}
+                {userNotificationData && userNotificationData.length === 0 && (
+                  <span style={{ textAlign: "center" }}>No notification </span>
+                )}
               </NavDropdown>
               <NavDropdown
                 title={
                   <div className="pull-left">
                     {profileData?.firstName} {profileData?.lastName}
+                    {role === "AGENCY" && profileData?.agencyName}
                     {/* {profileData?.role} */}
                     <img
                       className="profile-drop-img"
@@ -142,14 +135,36 @@ const Header = () => {
                 id="basic-nav-dropdown"
                 className="profile_menu"
               >
-                <NavDropdown.Item href="/Myprofile">
-                  <img src={Profile} alt="" />
-                  Profile
-                </NavDropdown.Item>
-                <NavDropdown.Item href="/Mybookings">
-                  <img src={Bookings} alt="" />
-                  Bookings
-                </NavDropdown.Item>
+                {role === "AGENCY" && (
+                  <NavDropdown.Item href="/agency/Myprofile">
+                    <img src={Profile} alt="" />
+                    Profile
+                  </NavDropdown.Item>
+                )}
+                {role === "EXPERT" && (
+                  <NavDropdown.Item href="/Myprofile">
+                    <img src={Profile} alt="" />
+                    Profile
+                  </NavDropdown.Item>
+                )}
+                {role === "USER" && (
+                  <NavDropdown.Item href="/Myprofile">
+                    <img src={Profile} alt="" />
+                    Profile
+                  </NavDropdown.Item>
+                )}
+                {role === "AGENCY" && (
+                  <NavDropdown.Item href="/agency/experts/all">
+                    <img src={Profile} alt="" />
+                    All Experts
+                  </NavDropdown.Item>
+                )}
+                {role !== "AGENCY" && (
+                  <NavDropdown.Item href="/Mybookings">
+                    <img src={Bookings} alt="" />
+                    Bookings
+                  </NavDropdown.Item>
+                )}
                 <NavDropdown.Item href="/wallet">
                   <img src={WalletIcon} alt="" />
                   Wallet

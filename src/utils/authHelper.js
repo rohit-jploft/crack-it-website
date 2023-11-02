@@ -12,13 +12,13 @@ export const isUser = () => {
   return false;
 };
 export const isUserNameDisplay = (id) => {
-  console.log("id", id, typeof id)
+  console.log("id", id, typeof id);
   const loggedUserId = localStorage.getItem("userId");
 
   if (loggedUserId.toString() === id) {
     return true;
   }
-  return false
+  return false;
 };
 export const isExpert = () => {
   const role = localStorage.getItem("role");

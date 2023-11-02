@@ -13,6 +13,17 @@ export const getAllmeetings = async (tabStatus) => {
     return error;
   }
 };
+export const getAllAgencymeetings = async (tabStatus, uid) => {
+ 
+  try {
+    const res = await Axios.get(
+      `${BASE_URL}booking/get-all?tabStatus=${tabStatus}&userId=${uid}&role=EXPERT`
+    );
+    return res.data;
+  } catch (error) {
+    return error;
+  }
+};
 export const getSingleBookingDetail = async (bookingId) => {
   try {
     const res = await Axios.get(`${BASE_URL}booking/single/${bookingId}`);

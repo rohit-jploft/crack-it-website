@@ -9,22 +9,22 @@ export const getUsers = async (role, search, limit, page, isAdmin) => {
   return users.data;
 };
 export const changePasswordApi = async (data) => {
-    const token = localStorage.getItem('token');
-    console.log(token);
-    if (token) {
-      const res = await Axios.post(
-        `${BASE_URL}auth/user/change-password`,
-        { oldPassword: data.oldPassword, password: data.newPassword },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      return res.data;
-    }
-    return { message: 'Token is missing' };
-  };
+  const token = localStorage.getItem("token");
+  console.log(token);
+  if (token) {
+    const res = await Axios.post(
+      `${BASE_URL}auth/user/change-password`,
+      { oldPassword: data.oldPassword, password: data.newPassword },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return res.data;
+  }
+  return { message: "Token is missing" };
+};
 export const createUser = async (data, dailCode) => {
   const body = { ...data, countryCode: `+${dailCode}` };
   //   if (isAdmin) body.role = 'USER';
@@ -75,14 +75,14 @@ export const isUser = async () => {
   return false;
 };
 export const isExpert = async () => {
-    const role = localStorage.getItem("role");
-    if (role) {
-      if (role === "EXPERT") {
-        return true;
-      }
-      return false;
+  const role = localStorage.getItem("role");
+  if (role) {
+    if (role === "EXPERT") {
+      return true;
     }
     return false;
+  }
+  return false;
 };
 export const suspendAccount = async (userId, isDeleted) => {
   try {
@@ -113,4 +113,17 @@ export const resetPasswordApi = async (password, token) => {
     return res.data;
   }
   return { message: "Token is missing" };
+};
+
+export const setProfilePicture = async (userId, profilePic) => {
+  const newFormData = new FormData();
+  if (profilePic) {
+    newFormData.append("profilePic", profilePic);
+    try {
+      const res = await Axios.put(`${BASE_URL}auth/user/set/profile/${userId}`,newFormData );
+      return res.data
+    } catch (error) {
+      return error;
+    }
+  }
 };

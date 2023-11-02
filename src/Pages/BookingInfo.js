@@ -30,7 +30,7 @@ const BookingInfo = () => {
     getBookingData();
     setPromoApplied(false);
     setPromoRemoved(false);
-  }, [promoApplied, promoRemoved]);
+  }, [promoApplied, promoRemoved, bookingId ]);
 
   const applyPromoCode = async () => {
     try {
@@ -94,6 +94,7 @@ const BookingInfo = () => {
       return error;
     }
   };
+  const role = localStorage.getItem('role')
   return (
     <>
       <Header />
@@ -177,7 +178,7 @@ const BookingInfo = () => {
                     </div>
                   </div> */}
                 </div>
-                {bookingData?.booking?.status === "UNPAID" && (
+                {bookingData?.booking?.status === "UNPAID" && role==="USER" && (
                   <div className="promo-card-container promocode-nader">
                     <h3>Promos & Gift Codes</h3>
                     <p>
@@ -195,8 +196,9 @@ const BookingInfo = () => {
                             : promoCode
                         }
                         handleChange={(e) => setPromoCode(e.target.value)}
+
                       />
-                      {!bookingData?.booking.promoCode && (
+                      {!bookingData?.booking.promoCode && promoCode && (
                         <button onClick={() => applyPromoCode()}>APPLY</button>
                       )}
                       {bookingData?.booking.promoCode && (
@@ -233,29 +235,33 @@ const BookingInfo = () => {
                   </div>
                 </div>
               </div>
-              {bookingData?.booking?.status === "UNPAID" && (
-                <div
-                  style={{
-                    width: "100%",
-                    display: "flex",
-                    flexDirection: "row",
-                    justifyContent: "center",
-                    alignItems: "flex-end",
-                    marginTop: "15px",
-                  }}
-                >
-                  <button
-                    className="form-btn"
-                    type="submit"
-                    style={{ marginLeft: "auto", width: "35%" }}
-                    onClick={() => {
-                      makePayment(bookingData?.booking?.grandTotal, bookingId);
+              {bookingData?.booking?.status === "UNPAID" &&
+                bookingData?.booking?.booking?.status === "ACCEPTED" && role==="USER" &&  (
+                  <div
+                    style={{
+                      width: "100%",
+                      display: "flex",
+                      flexDirection: "row",
+                      justifyContent: "center",
+                      alignItems: "flex-end",
+                      marginTop: "15px",
                     }}
                   >
-                    Pay & Proceed
-                  </button>
-                </div>
-              )}
+                    <button
+                      className="form-btn"
+                      type="submit"
+                      style={{ marginLeft: "auto", width: "35%" }}
+                      onClick={() => {
+                        makePayment(
+                          bookingData?.booking?.grandTotal,
+                          bookingId
+                        );
+                      }}
+                    >
+                      Pay & Proceed
+                    </button>
+                  </div>
+                )}
             </div>
           </div>
         </Container>

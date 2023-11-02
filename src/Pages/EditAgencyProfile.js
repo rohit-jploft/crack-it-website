@@ -1,7 +1,7 @@
 import "./../style.css";
 import Logo from "./../Images/logo.png";
 import RightBg from "./../Images/right_bg.jpg";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Checkbox, FormControlLabel } from "react-dom";
 
 import Pot from "./../Images/pot.svg";
@@ -11,7 +11,7 @@ import Visible from "./../Images/visible.svg";
 import TextInput from "../components/InputField";
 import { useFormik } from "formik";
 import * as Yup from "yup"; // Import Yup for validation
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { UserContext } from "../context/userContext";
 import Axios from "axios";
 import { BASE_URL } from "../constant";
@@ -20,45 +20,13 @@ import Header from "./Header";
 import { getCategoryList } from "../data/booking";
 import { ToastContainer, toast } from "react-toastify";
 import { updateExpertProfile } from "../data/experts";
-import { addNewAgencyExpert } from "../data/agency";
-import { setProfilePicture } from "../data/user";
-
+import { updateAgencyProfile } from "../data/agency";
 const validationSchema = Yup.object().shape({
-  firstName: Yup.string().required("First Name is required"),
-  lastName: Yup.string().required("Last Name is required"),
-  email: Yup.string()
-    .email("Invalid email format")
-    .required("Email is required"),
-  password: Yup.string()
-    .required("Password is required")
-    .matches(
-      /^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})/,
-      "Password must contain at least 8 characters, one uppercase letter, one number, and one special character"
-    ),
-  phone: Yup.string()
-    .required("Phone is required")
-    .matches(
-      /^[0-9]{10}$/, // You can adjust the regular expression to match your desired format
-      "Phone number must be exactly 10 digits"
-    ),
-  experience: Yup.number().required("experience is required"),
-  jobCategory: Yup.string().required("job category is required"),
-  subCategory: Yup.string().required(),
-  description: Yup.string()
-    .min(100, "Description should minimum length of 100")
-    .required("Description is required"),
-  price: Yup.number().required("price is required"),
-  languages: Yup.array(
-    Yup.string().required("Atleast one language is required")
-  ),
-});
-const validationSchemaWithOutPassword = Yup.object().shape({
-  firstName: Yup.string().required("First Name is required"),
-  lastName: Yup.string().required("Last Name is required"),
-  email: Yup.string()
-    .email("Invalid email format")
-    .required("Email is required"),
+  agencyName: Yup.string().required("agencyName is required"),
 
+  email: Yup.string()
+    .email("Invalid email format")
+    .required("Email is required"),
   phone: Yup.string()
     .required("Phone is required")
     .matches(
@@ -71,23 +39,17 @@ const validationSchemaWithOutPassword = Yup.object().shape({
   description: Yup.string()
     .min(100, "Description should minimum length of 100")
     .required("Description is required"),
-  price: Yup.number().required("price is required"),
   languages: Yup.array(
     Yup.string().required("Atleast one language is required")
   ),
 });
-const AddAgencyExpert = () => {
-  const { expertUserId } = useParams();
+const EditAgencyProfile = () => {
   const navigate = useNavigate();
   const [userData, setUserData] = useState();
   const [jobCategoryList, setJobCategoryList] = useState();
   const [skillsData, setSkillsData] = useState();
   const [subCategoryList, setSubCategoryList] = useState();
   const [storeSkills, setStoreSkills] = useState([]);
-  const [showPassword, setShowPassword] = useState(false);
-  const [profilePic, setProfilePic] = useState();
-  const [recievedPic, setRecievedPic] = useState();
-  const [profilePicUploadDone, setProfilePicUploadDone] = useState(false);
   const {
     profileSetupData,
     setProfileSetupData,
@@ -95,120 +57,41 @@ const AddAgencyExpert = () => {
     setPreEditExpertData,
   } = useContext(UserContext);
   const userId = localStorage.getItem("userId");
-  const getUserData = async () => {
-    const token = localStorage.getItem("token");
-    const res = await Axios.get(
-      `${BASE_URL}expert/get/profile/${expertUserId}`
-    );
-    console.log(res);
-    if (res.data.data) {
-      setUserData(res.data.data);
-      setPreEditExpertData(res?.data?.data);
-      formik.setFieldValue("firstName", res.data.data?.expert?.user?.firstName);
-      formik.setFieldValue("lastName", res.data.data?.expert?.user?.lastName);
-      formik.setFieldValue("email", res.data.data?.expert?.user?.email);
-      formik.setFieldValue("phone", res.data.data?.expert?.user?.phone);
-      formik.setFieldValue("description", res.data.data?.expert?.description);
-      formik.setFieldValue("price", res.data.data?.expert?.price);
-      formik.setFieldValue("experience", res.data.data?.expert?.experience);
-      setRecievedPic(res.data.data?.expert?.user?.profilePhoto);
-      console.log(
-        "job category when selected",
-        res.data.data?.expert?.jobCategory?._id
-      );
-      formik.setFieldValue(
-        "jobCategory",
-        res.data.data?.expert?.jobCategory?._id
-      );
-      let skilArr = [];
-      for (let ski of res.data.data?.expert?.expertise) {
-        skilArr.push(ski._id);
-      }
-      setStoreSkills(skilArr);
-      formik.setFieldValue("languages", res.data.data?.expert?.languages);
-    }
-  };
+
   const formik = useFormik({
-    initialValues: !expertUserId
-      ? {
-          firstName: "",
-          lastName: "",
-          password: "",
-          email: "",
-          phone: "",
-          description: "",
-          experience: "",
-          price: "",
-          jobCategory: "",
-          subCategory: "",
-          languages: [],
-        }
-      : {
-          firstName: "",
-          lastName: "",
-          email: "",
-          phone: "",
-          description: "",
-          experience: "",
-          price: "",
-          jobCategory: "",
-          subCategory: "",
-          languages: [],
-        },
+    initialValues: {
+      agencyName: "",
+
+      email: "",
+      phone: "",
+      description: "",
+      experience: "",
+      jobCategory: "",
+      subCategory: "",
+      languages: [],
+    },
     onSubmit: async (values) => {
-      console.log(values);
       if (storeSkills.length === 0) {
         toast.error("please select atleast one skill");
       } else {
         console.log("entered api call update wali");
         // Handle form submission here
-        if (expertUserId) {
-          const data = await updateExpertProfile(expertUserId, {
-            description: values?.description,
-            jobCategory: values?.jobCategory,
-            price: values?.price,
-            expertise: storeSkills,
-            language: values?.languages,
-            experience: values?.experience,
-          });
-          // console.log(data);
-          if (data && data.success && data.status === 200) {
-            toast.success(data.message, { autoClose: 500 });
-            setTimeout(() => {
-              navigate("/agency/experts/all");
-            }, 600);
-          } else {
-            toast.error("Something went wrong");
-          }
+        const data = await updateAgencyProfile(userId, {
+          description: values?.description,
+          jobCategory: values?.jobCategory,
+          price: values?.price,
+          expertise: storeSkills,
+          language: values?.languages,
+          experience: values?.experience,
+        });
+        // console.log(data);
+        if (data && data.success && data.status === 200) {
+          toast.success(data.message, { autoClose: 500 });
+          setTimeout(() => {
+            navigate("/agency/MyProfile");
+          }, 600);
         } else {
-            console.log("entered add new wali console")
-            console.log(values, "values")
-          const data = await addNewAgencyExpert(
-            {
-              firstName: values.firstName,
-              lastName: values.lastName,
-              email: values.email,
-              phone: values.phone,
-              password: values.password,
-              description: values?.description,
-              jobCategory: values?.jobCategory,
-              price: values?.price,
-              expertise: storeSkills,
-              languages: values.languages,
-              experience: values?.experience,
-            },
-            profilePic
-          );
-          console.log(data)
-          console.log(data, "new agency expert response data");
-          if (data && data.success && data.status === 200) {
-            toast.success(data.message, { autoClose: 500 });
-            setTimeout(() => {
-              navigate("/agency/experts/all");
-            }, 600);
-          } else {
-            toast.error("Something went wrong");
-          }
+          toast.error("Something went wrong");
         }
 
         //   setProfileSetupData(values);
@@ -216,9 +99,7 @@ const AddAgencyExpert = () => {
         //   navigate("/myprofile");
       }
     },
-    validationSchema: expertUserId
-      ? validationSchemaWithOutPassword
-      : validationSchema,
+    validationSchema,
   });
   const handleCheckboxChange = (event, value) => {
     const { name, checked } = event.target;
@@ -235,40 +116,42 @@ const AddAgencyExpert = () => {
       );
     }
   };
-  //   const getUserData = async () => {
-  //     const token = localStorage.getItem("token");
-  //     const res = await Axios.get(`${BASE_URL}expert/get/profile/${userId}`, {
-  //       headers: {
-  //         Authorization: `Bearer ${token}`,
-  //       },
-  //     });
-  //     console.log(res);
-  //     if (res.data.data) {
-  //       setUserData(res.data.data);
-  //       setPreEditExpertData(res?.data?.data);
-  //       formik.setFieldValue("firstName", res.data.data?.expert?.user?.firstName);
-  //       formik.setFieldValue("lastName", res.data.data?.expert?.user?.lastName);
-  //       formik.setFieldValue("email", res.data.data?.expert?.user?.email);
-  //       formik.setFieldValue("phone", res.data.data?.expert?.user?.phone);
-  //       formik.setFieldValue("description", res.data.data?.expert?.description);
-  //       formik.setFieldValue("price", res.data.data?.expert?.price);
-  //       formik.setFieldValue("experience", res.data.data?.expert?.experience);
-  //       console.log(
-  //         "job category when selected",
-  //         res.data.data?.expert?.jobCategory?._id
-  //       );
-  //       formik.setFieldValue(
-  //         "jobCategory",
-  //         res.data.data?.expert?.jobCategory?._id
-  //       );
-  //       let skilArr = [];
-  //       for (let ski of res.data.data?.expert?.expertise) {
-  //         skilArr.push(ski._id);
-  //       }
-  //       setStoreSkills(skilArr);
-  //       formik.setFieldValue("languages", res.data.data?.expert?.languages);
-  //     }
-  //   };
+  const getUserData = async () => {
+    const token = localStorage.getItem("token");
+    const res = await Axios.get(`${BASE_URL}agency/profile/${userId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    console.log(res, "data agency");
+    if (res.data.data) {
+      setUserData(res.data.data);
+      setPreEditExpertData(res?.data?.data);
+      formik.setFieldValue(
+        "agencyName",
+        res.data.data?.expert?.agency?.agencyName
+      );
+      formik.setFieldValue("email", res.data.data?.expert?.agency?.email);
+      formik.setFieldValue("phone", res.data.data?.expert?.agency?.phone);
+      formik.setFieldValue("description", res.data.data?.expert?.description);
+      formik.setFieldValue("price", res.data.data?.expert?.price);
+      formik.setFieldValue("experience", res.data.data?.expert?.experience);
+      console.log(
+        "job category when selected",
+        res.data.data?.expert?.jobCategory?._id
+      );
+      formik.setFieldValue(
+        "jobCategory",
+        res.data.data?.expert?.jobCategory?._id
+      );
+      let skilArr = [];
+      for (let ski of res.data.data?.expert?.expertise) {
+        skilArr.push(ski._id);
+      }
+      setStoreSkills(skilArr);
+      formik.setFieldValue("languages", res.data?.data?.expert?.languages);
+    }
+  };
 
   const getJobCateList = async () => {
     const res = await getCategoryList();
@@ -276,7 +159,7 @@ const AddAgencyExpert = () => {
     console.log("cat list", res);
   };
   const getSubCateList = async () => {
-    if (formik.values.jobCategory) {
+    if (formik?.values?.jobCategory) {
       const res = await getCategoryList(formik.values.jobCategory);
       setSubCategoryList(res?.data);
       formik.setFieldValue("subCategory", res?.data[0]._id);
@@ -306,13 +189,7 @@ const AddAgencyExpert = () => {
     }
   }
   useEffect(() => {
-    if (expertUserId) {
-      setProfilePicUploadDone(false);
-      getUserData();
-    }
-  }, [profilePicUploadDone]);
-  useEffect(() => {
-    // getUserData();
+    getUserData();
     getJobCateList();
   }, []);
   useEffect(() => {
@@ -323,49 +200,6 @@ const AddAgencyExpert = () => {
     getSkills();
   }, [formik.values.subCategory]);
 
-  // set profile pic functions
-  const fileInputRef = useRef(null);
-
-  const handleFileInputChange = async (e) => {
-    const selectedFile = e.target.files[0];
-
-    if (selectedFile) {
-      const fileType = selectedFile.type;
-      const acceptedTypes = ["image/*"];
-      if (acceptedTypes.some((type) => fileType.match(type))) {
-        // File type is valid, you can handle the file here
-        console.log("Selected file:", selectedFile);
-        setProfilePic(selectedFile);
-        if (expertUserId) {
-          await setProfilePicture(expertUserId, selectedFile)
-            .then((res) => {
-              console.log(res, "profile set response");
-              if (res && res.status === 200 && res.success) {
-                toast.success(res?.message);
-                setProfilePicUploadDone(true);
-              }
-            })
-            .catch((err) => console.log(err));
-        }
-      } else {
-        // alert("Invalid file type. Please select an audio, PDF, or image file.");
-        toast.error(
-          "Invalid file type. Please select an audio, PDF, or image file."
-        );
-        // Clear the input to prevent further submission
-        setProfilePic();
-        fileInputRef.current.value = "";
-      }
-    }
-    // Check if the selected file type matches any of the accepted types
-
-    // Do something with the selected file, e.g., upload or process it
-  };
-
-  const handleIconClick = () => {
-    // Trigger the file input when the icon is clicked
-    fileInputRef.current.click();
-  };
   return (
     <>
       <ToastContainer />
@@ -383,33 +217,16 @@ const AddAgencyExpert = () => {
               }}
             >
               <div class="profileSetup">
-                <h2>
-                  {expertUserId
-                    ? "Edit Agency Expert"
-                    : "Add New Agency Expert"}
-                </h2>
+                <h2>Edit Profile</h2>
                 <div class="expert-image">
-                  {console.log(recievedPic, "recieved pic")}
                   <img
-                    src={
-                      recievedPic
-                        ? `${BASE_URL}${recievedPic}`
-                        : "/static/media/expert-img.199747df04b3a83a67b449c8ff5963a0.svg"
-                    }
-                    // src="/static/media/expert-img.199747df04b3a83a67b449c8ff5963a0.svg"
+                    src="/static/media/expert-img.199747df04b3a83a67b449c8ff5963a0.svg"
                     alt="Img"
                   />
                   <button
                     type="button"
                     class="profile-img-edit btn btn-primary"
-                    onClick={handleIconClick}
                   >
-                    <input
-                      type="file"
-                      ref={fileInputRef}
-                      onChange={handleFileInputChange}
-                      style={{ display: "none" }}
-                    />
                     <img
                       src="/static/media/edit.0543f4f52dca0cf68ddf82ec128fb432.svg"
                       alt="img"
@@ -418,45 +235,30 @@ const AddAgencyExpert = () => {
                 </div>
               </div>
               <div className="row">
-                <div className="col-md-6">
+                <div className="col-md-12">
                   <TextInput
-                    name="firstName"
+                    name="agencyName"
                     type="text"
-                    label="First Name"
-                    readonly={expertUserId}
-                    value={formik.values.firstName}
+                    label="Agency Name"
+                    readonly={true}
+                    value={formik.values.agencyName}
                     handleChange={formik.handleChange}
                     error={
-                      formik.touched.firstName &&
-                      Boolean(formik.errors.firstName)
+                      formik.touched.agencyName &&
+                      Boolean(formik.errors.agencyName)
                     }
                     helperText={
-                      formik.touched.firstName && formik.errors.firstName
+                      formik.touched.agencyName && formik.errors.agencyName
                     }
                   />
                 </div>
-                <div className="col-md-6">
-                  <TextInput
-                    name="lastName"
-                    type="text"
-                    label="Last Name"
-                    readonly={expertUserId}
-                    value={formik.values.lastName}
-                    handleChange={formik.handleChange}
-                    error={
-                      formik.touched.lastName && Boolean(formik.errors.lastName)
-                    }
-                    helperText={
-                      formik.touched.lastName && formik.errors.lastName
-                    }
-                  />
-                </div>
+               
                 <div className="col-md-6">
                   <TextInput
                     name="email"
                     type="email"
                     label="Email"
-                    readonly={expertUserId}
+                    readonly={true}
                     value={formik.values.email}
                     handleChange={formik.handleChange}
                     error={formik.touched.email && Boolean(formik.errors.email)}
@@ -468,33 +270,13 @@ const AddAgencyExpert = () => {
                     name="phone"
                     type="number"
                     label="Phone"
-                    readonly={expertUserId}
+                    readonly={true}
                     value={formik.values.phone}
                     handleChange={formik.handleChange}
                     error={formik.touched.phone && Boolean(formik.errors.phone)}
                     helperText={formik.touched.phone && formik.errors.phone}
                   />
                 </div>
-                {!expertUserId && (
-                  <div className="col-md-12">
-                    <TextInput
-                      type={showPassword ? "text" : "password"}
-                      name="password"
-                      value={formik.values.password}
-                      handleChange={formik.handleChange}
-                      label="Password"
-                      showPassword={showPassword}
-                      setShowPassword={(value) => setShowPassword(value)}
-                      error={
-                        formik.touched.password &&
-                        Boolean(formik.errors.password)
-                      }
-                      helperText={
-                        formik.touched.password && formik.errors.password
-                      }
-                    />
-                  </div>
-                )}
 
                 <div className="col-md-12">
                   <div class="input-field">
@@ -634,22 +416,7 @@ const AddAgencyExpert = () => {
                     })}
                   </div>
                 </div>
-                <div className="col-md-6">
-                  <div class="input-field price">
-                    <TextInput
-                      label="Price"
-                      name="price"
-                      type="number"
-                      value={formik.values.price}
-                      handleChange={formik.handleChange}
-                      error={
-                        formik.touched.price && Boolean(formik.errors.price)
-                      }
-                      helperText={formik.touched.price && formik.errors.price}
-                    />
-                    <div class="price-icon">$</div>
-                  </div>
-                </div>
+              
                 <div className="col-md-6">
                   <TextInput
                     name="experience"
@@ -743,4 +510,4 @@ const AddAgencyExpert = () => {
   );
 };
 
-export default AddAgencyExpert;
+export default EditAgencyProfile;

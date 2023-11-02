@@ -1,6 +1,6 @@
 import { useRoutes, Navigate } from "react-router-dom";
 
-import { isAuthenticated, isExpert } from "./utils/authHelper";
+import { isAgency, isAuthenticated, isExpert } from "./utils/authHelper";
 import Login from "./Pages/Login";
 import MyBookings from "./Pages/MyBookings";
 import Signup from "./Pages/SignUp";
@@ -30,12 +30,15 @@ import AddAgencyExpert from "./Pages/AddAgencyExpert";
 import AgencyExpertJobCategory from "./Pages/AgencyExpertJobCategory";
 import AgencyExpertSubCategory from "./Pages/AgencyExpertSubCategory";
 import EditExpertProfile from "./Pages/EditExpertProfile";
-import EditJobCategory from "./Pages/EditJobCategory";
 import ReferAndEarn from "./Pages/ReferAndEarn";
+import EditAgencyProfile from "./Pages/EditAgencyProfile";
+import AgencyExpertProfile from "./Pages/AgencyExpertProfile";
+import AgencyExpertBooking from "./Pages/AgencyExpertBooking";
 
 function AppRoutes() {
   const isAuthenticateds = isAuthenticated();
   const isThisExpert = isExpert()
+  const isThisAgency = isAgency()
   console.log("is Auth", isAuthenticateds);
   const routes = useRoutes([
     {
@@ -70,10 +73,7 @@ function AppRoutes() {
       path: "/JobCategory",
       element: isAuthenticateds ? <JobCategory />:<Navigate to="/login" /> ,
     },
-    {
-      path: "/edit/JobCategory",
-      element: isAuthenticateds ? <EditJobCategory />:<Navigate to="/login" /> ,
-    },
+ 
     {
       path: "/subCategory",
       element: isAuthenticateds ? <SubCategory />:<Navigate to="/login" /> ,
@@ -95,6 +95,10 @@ function AppRoutes() {
       element: isAuthenticateds ? <AddAgencyExpert />:<Navigate to="/agency/login" /> ,
     },
     {
+      path: "/agency/edit/expert/:expertUserId",
+      element: isAuthenticateds ? <AddAgencyExpert />:<Navigate to="/agency/login" /> ,
+    },
+    {
       path: "/agency/add/expert/jobCategory",
       element: isAuthenticateds ? <AgencyExpertJobCategory /> : <Navigate to="/agency/login" /> ,
     },
@@ -105,6 +109,10 @@ function AppRoutes() {
     {
       path: "/mybookings",
       element: isAuthenticateds ? <MyBookings />:<Navigate to="/login" /> ,
+    },
+    {
+      path: "/agency/expert/bookings/:agencyExpertUserId",
+      element: isAuthenticateds ? <AgencyExpertBooking />:<Navigate to="/login" /> ,
     },
     {
       path: "/bookingInfo/:bookingId",
@@ -124,14 +132,31 @@ function AppRoutes() {
     },
     {
       path: "/Myprofile",
-      element: isAuthenticateds ? isThisExpert ? <ExpertsProfile/>: <MyProfile />:<Navigate to="/login" /> ,
+      element: isAuthenticateds ? isThisExpert ?  <ExpertsProfile/> : <MyProfile />:<Navigate to="/login" /> 
+    },
+    {
+      path: "/agency/expert/profile/:agencyExpertUserId",
+      element: isAuthenticateds && isThisAgency ?  <AgencyExpertProfile/> :<Navigate to="/login" /> 
+    },
+    {
+      path: "agency/Myprofile",
+      element: isAuthenticateds ? isThisAgency ?  <ExpertsProfile/> : <MyProfile />:<Navigate to="/login" /> 
     },
     {
       path: "/edit/Myprofile",
       element: isAuthenticateds ? isThisExpert ? <EditExpertProfile/> : <MyProfile />:<Navigate to="/login" /> ,
     },
     {
+      path: "/edit/agency/Myprofile",
+      element: isAuthenticateds ? isThisAgency ? <EditAgencyProfile/> : <MyProfile />:<Navigate to="/login" /> ,
+      // loader:<h1>Loading</h1>
+    },
+    {
       path: "/chat",
+      element: isAuthenticateds ? <Chat />:<Navigate to="/login" /> ,
+    },
+    {
+      path: "/chat/:convoId",
       element: isAuthenticateds ? <Chat />:<Navigate to="/login" /> ,
     },
     {

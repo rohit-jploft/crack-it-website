@@ -8,13 +8,13 @@ importScripts(
 
 // Initialize the Firebase app in the service worker by passing the generated config
 const firebaseConfig = {
-  apiKey: "AIzaSyBtMnlIbzeOOTf8FdTLcaT5NwN9OSY6ZPk",
-  authDomain: "crackit-770ca.firebaseapp.com",
-  projectId: "crackit-770ca",
-  storageBucket: "crackit-770ca.appspot.com",
-  messagingSenderId: "864608849971",
-  appId: "1:864608849971:web:4cc0d980a1be0cc7065346",
-  measurementId: "G-05ZL1EJVPE",
+  apiKey: "AIzaSyCR43VTwx11WjV95PiBf6HJMIayXxrh7zY",
+  authDomain: "crackit-d3bfb.firebaseapp.com",
+  projectId: "crackit-d3bfb",
+  storageBucket: "crackit-d3bfb.appspot.com",
+  messagingSenderId: "767742891503",
+  appId: "1:767742891503:web:526c1e6910092ac33ad21a",
+  measurementId: "G-W2XG2EHR99"
 };
 
 firebase.initializeApp(firebaseConfig);
