@@ -24,7 +24,7 @@ import { updateAgencyProfile } from "../data/agency";
 const validationSchema = Yup.object().shape({
   agencyName: Yup.string().required("agencyName is required"),
 
-  email: Yup.string()
+  email: Yup.string().matches(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, "Invalid email")
     .email("Invalid email format")
     .required("Email is required"),
   phone: Yup.string()

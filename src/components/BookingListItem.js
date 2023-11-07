@@ -21,41 +21,42 @@ const BookingListItem = ({
   status,
   amount,
   meetingId,
+  expertPrimaryId,
 }) => {
   const navigate = useNavigate();
   const isThisExpert = isExpert();
   const isThisAgency = isAgency();
   const isThisUser = isUser();
-  const makePayment = async(amount,meetingId)=>{
+  const makePayment = async (amount, meetingId) => {
     const stripe = await loadStripe(STRIPE_PUBLIC_KEY);
 
-   try {
-    const body = {
-      amount:amount,
-      meetingId:meetingId
-    }
-    const headers = {
-        "Content-Type":"application/json"
-    }
-    const response = await fetch(`${BASE_URL}payment/intent/create`,{
-        method:"POST",
-        headers:headers,
-        body:JSON.stringify(body)
-    });
+    try {
+      const body = {
+        amount: amount,
+        meetingId: meetingId,
+      };
+      const headers = {
+        "Content-Type": "application/json",
+      };
+      const response = await fetch(`${BASE_URL}payment/intent/create`, {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify(body),
+      });
 
-    const session = await response.json();
+      const session = await response.json();
 
-    const result = stripe.redirectToCheckout({
-        sessionId:session.id
-    });
-    
-    if(result.error){
+      const result = stripe.redirectToCheckout({
+        sessionId: session.id,
+      });
+
+      if (result.error) {
         console.log(result.error);
+      }
+    } catch (error) {
+      return error;
     }
-   } catch (error) {
-    return error;
-   }
-}
+  };
   return (
     <div className="booking_field active">
       <div className="daydate">
@@ -80,7 +81,7 @@ const BookingListItem = ({
         <h4>{experience} year</h4>
       </div>
       <div className="action">
-        {cancelButton  && status !== "REQUESTED" && (
+        {cancelButton && status !== "REQUESTED" && (
           <button
             className="btn_border"
             onClick={(e) => {
@@ -92,19 +93,32 @@ const BookingListItem = ({
             Cancel
           </button>
         )}
-     
-        {isThisUser && !isThisExpert & !isThisAgency && status === "ACCEPTED" && (
+
+        {isThisUser &&
+          !isThisExpert & !isThisAgency &&
+          status === "ACCEPTED" && (
+            <button
+              className="btn_bg"
+              onClick={(e) => {
+                //   e.stopPropagation();
+                // //   onClickCancel();
+                // makePayment(amount,meetingId)
+                // navigate('/payment')
+              }}
+              variant="primary"
+            >
+              Pay
+            </button>
+          )}
+        {isThisUser && status === "COMPLETED" && (
           <button
             className="btn_bg"
             onClick={(e) => {
-            //   e.stopPropagation();
-            // //   onClickCancel();
-            // makePayment(amount,meetingId)
-            // navigate('/payment')
+              e.stopPropagation();
+              navigate(`/rate/expert/${expertPrimaryId}`);
             }}
-            variant="primary"
           >
-            Pay
+            Rate
           </button>
         )}
         {!isThisExpert && status === "ACCEPTED" && (
@@ -119,18 +133,40 @@ const BookingListItem = ({
             Cancel
           </button>
         )}
-        {isThisExpert   && status === "REQUESTED" && (
+        {isThisExpert && status === "REQUESTED" && (
           <button
             className="btn_bg"
             onClick={(e) => {
               e.stopPropagation();
-              onClickAccept()
+              onClickAccept();
             }}
           >
             Accept
           </button>
         )}
-        {isThisExpert  && status === "REQUESTED" && (
+        {isThisAgency && status === "REQUESTED" && (
+          <button
+            className="btn_bg"
+            onClick={(e) => {
+              e.stopPropagation();
+              onClickAccept();
+            }}
+          >
+            Accept
+          </button>
+        )}
+        {isThisExpert && status === "REQUESTED" && (
+          <button
+            className="btn_border"
+            onClick={(e) => {
+              e.stopPropagation();
+              onClickDecline();
+            }}
+          >
+            Decline
+          </button>
+        )}
+        {isThisAgency && status === "REQUESTED" && (
           <button
             className="btn_border"
             onClick={(e) => {
@@ -152,8 +188,12 @@ const BookingListItem = ({
             Chat
           </button>
         )}
-        {status == "CANCELLED"  && <button className="btn_cancelled">{status}</button>}
-        {status == "DECLINED"  && <button className="btn_cancelled">{status}</button>}
+        {status == "CANCELLED" && (
+          <button className="btn_cancelled">{status}</button>
+        )}
+        {status == "DECLINED" && (
+          <button className="btn_cancelled">{status}</button>
+        )}
       </div>
     </div>
   );

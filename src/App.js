@@ -33,7 +33,7 @@ function App() {
 
       localStorage.setItem("firebasetoken", tokenw);
 
-      if (usertoken) {
+      if (tokenw) {
         try {
           const res = await Axios.put(
             `${BASE_URL}notification/save/deviceToken/${usertoken}`,

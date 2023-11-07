@@ -6,7 +6,7 @@ import Boyright from "./../Images/boy.svg";
 import ArrowLeft from "./../Images/Arrow_Left.svg";
 import Tech1 from "./../Images/tech1.svg";
 import Tech2 from "./../Images/tech2.svg";
-import { Outlet, Link } from "react-router-dom";
+import { Outlet, Link, useNavigate } from "react-router-dom";
 import Container from "react-bootstrap/Container";
 import { useState, Fragment } from "react";
 import closeButton from "../Images/closeButton.svg";
@@ -28,6 +28,7 @@ import { BASE_URL } from "../constant";
 import { ToastContainer, toast } from "react-toastify";
 const Home = () => {
   const [showContactForm, setShowContactForm] = useState(false);
+  const navigate = useNavigate()
   const formik = useFormik({
     initialValues: {
       name: "",
@@ -37,7 +38,7 @@ const Home = () => {
     },
     validationSchema: Yup.object().shape({
       name: Yup.string().required("Name is required"),
-      email: Yup.string().email("Invalid email").required("Email is required"),
+      email: Yup.string().email("Invalid email").matches(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, "Invalid email").required("Email is required"),
       phone: Yup.string().required("Phone is required"),
       message: Yup.string()
         .min(20, "message should be more than the length of 50")
@@ -61,13 +62,13 @@ const Home = () => {
       <section className="landing_banner">
         <Container>
           <div className="Header_nav">
-            <div className="brand-logo">
+            <div className="brand-logo" style={{cursor:"pointer"}} onClick={() => navigate("/")}>
               <img src={Logo} alt="Logo" />
             </div>
             <div className="header-right">
-              <Link to="/">
+              {/* <Link to="/">
                 <img src={Notification} alt="Logo" />
-              </Link>
+              </Link> */}
               <Link to="/agency/login">
                 <button className="btn_login">AGENCY LOGIN</button>
               </Link>

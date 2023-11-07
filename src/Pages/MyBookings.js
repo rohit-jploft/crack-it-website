@@ -61,12 +61,16 @@ const MyBookings = () => {
   }, [key, cancelDone]);
 
   const cancelBooking = async (bookingId) => {
-    const cancel = await Axios.put(`${BASE_URL}booking/cancel/${bookingId}`);
+    const role = localStorage.getItem('role')
+    const cancel = await Axios.put(`${BASE_URL}booking/cancel/${bookingId}?role=${role}`);
     console.log(cancel);
     if (cancel && cancel?.data?.status === 200) {
       toast.success(cancel.data.message);
       setCancelDone(true);
       handleClose();
+    }
+    if(cancel && cancel?.data.status === 201){
+      toast.error(cancel.data.message)
     }
   };
   const AcceptBooking = async (bookingId) => {
@@ -150,13 +154,14 @@ const MyBookings = () => {
                             date={new Date(meet.date).getDate()}
                             JobCategory={meet.jobCategory.title}
                             day={getDayName(new Date(meet.date).getDay())}
-                            expertName={`${meet.expert.firstName} ${meet.expert.lastName} `}
+                            expertName={`${meet?.expert?.firstName} ${meet?.expert?.lastName} `}
                             startTime={getTimeFromTimestamps(meet.startTime)}
                             endTime={getTimeFromTimestamps(meet.endTime)}
-                            experience={meet.expertData.experience}
+                            experience={meet?.expertData?.experience}
                             cancelled={meet.status === "CANCELLED"}
                             cancelButton={meet.status === "REQUESTED"}
                             status={meet.status}
+                            expertPrimaryId={meet?.expert?._id}
                             onClickChat={() => clickChatRedirect(meet?._id)}
                             onClickCancel={() => {
                               setBookingCancelId(meet?._id);

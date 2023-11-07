@@ -1,7 +1,7 @@
 import "./../style.css";
 import Logo from "./../Images/logo.png";
 import RightBg from "./../Images/right_bg.jpg";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { Checkbox, FormControlLabel } from "react-dom";
 import Pot from "./../Images/pot.svg";
 import Msg from "./../Images/msg.svg";
@@ -16,11 +16,15 @@ import { TextField } from "@mui/material";
 import TextInput from "../components/InputField";
 import PhoneInput from "react-phone-input-2";
 
-
 const validationSchema = Yup.object().shape({
-  firstName: Yup.string().required("First Name is required"),
-  lastName: Yup.string().required("Last Name is required"),
+  firstName: Yup.string()
+    .matches(/^[A-Za-z]+$/, "First Name can only contain letters")
+    .required("First Name is required"),
+  lastName: Yup.string()
+    .matches(/^[A-Za-z]+$/, "Last Name can only contain letters")
+    .required("Last Name is required"),
   email: Yup.string()
+    .matches(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, "Invalid email")
     .email("Invalid email format")
     .required("Email is required"),
   phone: Yup.string()
@@ -50,11 +54,12 @@ const validationSchema = Yup.object().shape({
 
 const Signup = (props) => {
   const [created, setCreated] = useState(false);
-  const navigate = useNavigate()
+  const { referedBy } = useParams();
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [dailCode, setDialCode] = useState();
-  
+
   const formik = useFormik({
     initialValues: {
       firstName: "",
@@ -72,11 +77,18 @@ const Signup = (props) => {
       // alert(JSON.stringify(values, null, 2));
       const { firstName, lastName, email, password, phone, termAndConditions } =
         values;
-      const res = await createUser(
-        { firstName, lastName, email, password, phone, termAndConditions },
-        dailCode,
-        props.isAdmin
-      );
+      let bodyObj = {
+        firstName,
+        lastName,
+        email,
+        password,
+        phone,
+        termAndConditions,
+      };
+      if (referedBy) {
+        bodyObj.referBy = referedBy.toString();
+      }
+      const res = await createUser(bodyObj, dailCode, props.isAdmin);
       console.log(res, "response signup");
       if (res.response && res.response.data) {
         toast.error(res.response.data.message, {
@@ -87,7 +99,7 @@ const Signup = (props) => {
         toast.success(res.message, {
           onClose: () => {
             setCreated(false);
-            navigate('/login')
+            navigate("/login");
           },
           autoClose: 800,
         });

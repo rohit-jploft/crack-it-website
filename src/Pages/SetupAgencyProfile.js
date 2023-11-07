@@ -16,8 +16,8 @@ import { UserContext } from "../context/userContext";
 import Axios from "axios";
 import { BASE_URL } from "../constant";
 const validationSchema = Yup.object().shape({
-  firstName: Yup.string().required("First Name is required"),
-  lastName: Yup.string().required("Last Name is required"),
+  agencyName: Yup.string().required("agency name is required"),
+
   email: Yup.string().matches(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, "Invalid email")
     .email("Invalid email format")
     .required("Email is required"),
@@ -31,24 +31,21 @@ const validationSchema = Yup.object().shape({
   description: Yup.string()
     .min(100, "Description should minimum length of 100")
     .required("Description is required"),
-  price: Yup.number().required("price is required"),
   languages: Yup.array(
     Yup.string().required("Atleast one language is required")
   ),
 });
-const SetupExpertProfile = () => {
+const SetupAgencyProfile = () => {
   const navigate = useNavigate();
   const [userData, setUserData] = useState();
   const { profileSetupData, setProfileSetupData } = useContext(UserContext);
   const formik = useFormik({
     initialValues: {
-      firstName: "",
-      lastName: "",
+        agencyname:'',
       email: "",
       phone: "",
       description: "",
       experience: "",
-      price: "",
       languages: [],
     },
     onSubmit: (values) => {
@@ -83,8 +80,7 @@ const SetupExpertProfile = () => {
     });
     if (res.data.data) {
       setUserData(res.data.data);
-      formik.setFieldValue("firstName", res.data.data?.firstName);
-      formik.setFieldValue("lastName", res.data.data?.lastName);
+      formik.setFieldValue("agencyName", res.data.data?.agencyName);
       formik.setFieldValue("email", res.data.data?.email);
       formik.setFieldValue("phone", res.data.data?.phone);
     }
@@ -125,36 +121,20 @@ const SetupExpertProfile = () => {
                 </div>
               </div>
               <div className="row">
+               
                 <div className="col-md-6">
                   <TextInput
-                    name="firstName"
+                    name="agencyName"
                     type="text"
-                    label="First Name"
+                    label="Agency Name"
                     readonly={true}
-                    value={formik.values.firstName}
+                    value={formik.values.agencyName}
                     handleChange={formik.handleChange}
                     error={
-                      formik.touched.firstName &&
-                      Boolean(formik.errors.firstName)
+                      formik.touched.agencyName && Boolean(formik.errors.agencyName)
                     }
                     helperText={
-                      formik.touched.firstName && formik.errors.firstName
-                    }
-                  />
-                </div>
-                <div className="col-md-6">
-                  <TextInput
-                    name="lastName"
-                    type="text"
-                    label="Last Name"
-                    readonly={true}
-                    value={formik.values.lastName}
-                    handleChange={formik.handleChange}
-                    error={
-                      formik.touched.lastName && Boolean(formik.errors.lastName)
-                    }
-                    helperText={
-                      formik.touched.lastName && formik.errors.lastName
+                      formik.touched.agencyName && formik.errors.agencyName
                     }
                   />
                 </div>
@@ -180,6 +160,22 @@ const SetupExpertProfile = () => {
                     handleChange={formik.handleChange}
                     error={formik.touched.phone && Boolean(formik.errors.phone)}
                     helperText={formik.touched.phone && formik.errors.phone}
+                  />
+                </div>
+                <div className="col-md-6">
+                  <TextInput
+                    name="experience"
+                    type="number"
+                    label="Experience"
+                    value={formik.values.experience}
+                    handleChange={formik.handleChange}
+                    error={
+                      formik.touched.experience &&
+                      Boolean(formik.errors.experience)
+                    }
+                    helperText={
+                      formik.touched.experience && formik.errors.experience
+                    }
                   />
                 </div>
 
@@ -217,38 +213,8 @@ const SetupExpertProfile = () => {
                       )}
                   </div>
                 </div>
-                <div className="col-md-6">
-                  <div class="input-field price">
-                    <TextInput
-                      label="Price"
-                      name="price"
-                      type="number"
-                      value={formik.values.price}
-                      handleChange={formik.handleChange}
-                      error={
-                        formik.touched.price && Boolean(formik.errors.price)
-                      }
-                      helperText={formik.touched.price && formik.errors.price}
-                    />
-                    <div class="price-icon">$</div>
-                  </div>
-                </div>
-                <div className="col-md-6">
-                  <TextInput
-                    name="experience"
-                    type="number"
-                    label="Experience"
-                    value={formik.values.experience}
-                    handleChange={formik.handleChange}
-                    error={
-                      formik.touched.experience &&
-                      Boolean(formik.errors.experience)
-                    }
-                    helperText={
-                      formik.touched.experience && formik.errors.experience
-                    }
-                  />
-                </div>
+                
+               
                 <div className="col-md-6">
                   <div class="input-field language-field">
                     <h6>Language</h6>
@@ -324,4 +290,4 @@ const SetupExpertProfile = () => {
   );
 };
 
-export default SetupExpertProfile;
+export default SetupAgencyProfile;

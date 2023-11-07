@@ -14,6 +14,21 @@ import { ForgotPasswordSendOtp } from "../data/user";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { UserContext } from "../context/userContext";
+
+const phoneOrEmailSchema = Yup.string().test('phoneOrEmail', 'Invalid phone or email', (value) => {
+  if (!value) return true; // Allow empty input
+
+  // Define regular expressions for phone number and email validation
+  const phoneRegex = /^[0-9]+$/;
+  const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}$/;
+
+  if (phoneRegex.test(value) || emailRegex.test(value)) {
+    return true; // Valid phone number or email
+  } else {
+    return false; // Invalid input
+  }
+});
+
 const Forgotpassword = () => {
   const navigate = useNavigate();
   const [dailCode, setDialCode] = useState("+91");
@@ -94,9 +109,9 @@ const Forgotpassword = () => {
                 <div>
                   <TextInput
                     name="phone"
-                    type="number"
+                    type="text"
                     handleChange={formik.handleChange}
-                    label="phone"
+                    label="Phone"
                     value={formik.values.phone}
                     error={formik.touched.phone && Boolean(formik.errors.phone)}
                     helperText={formik.touched.phone && formik.errors.phone}

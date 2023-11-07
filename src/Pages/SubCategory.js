@@ -10,7 +10,7 @@ import { getCategoryList } from "../data/booking";
 import { BookingContext } from "../context/bookingContext";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { isExpert } from "../utils/authHelper";
+import { isAgency, isExpert } from "../utils/authHelper";
 import { UserContext } from "../context/userContext";
 import Axios from "axios";
 import { BASE_URL } from "../constant";
@@ -42,6 +42,7 @@ const SubCategory = () => {
 
   // is the expert
   const isThisExpert = isExpert();
+  const isThisAgency = isAgency();
 
   useEffect(() => {
     getSubCatData(jobCategory);
@@ -84,6 +85,7 @@ const SubCategory = () => {
 
   const setupExpertProfileData = async () => {
     const user = localStorage.getItem("userId");
+    const role = localStorage.getItem("role");
     const data = {
       user,
       description: profileSetupData?.description,
@@ -93,20 +95,52 @@ const SubCategory = () => {
       expertise: storeSkills,
       experience: profileSetupData.experience,
     };
+
     const res = await Axios.post(`${BASE_URL}expert/profile/setup`, {
       ...data,
     });
     if (res && res.data && res.data.message) {
       toast.success(res.data.message, { autoClose: 500 });
       setTimeout(() => {
-        navigate("/mybookings");
+        navigate(role === "EXPERT" ? "/mybookings" : "/agency/experts/all");
       }, 1000);
     }
     if (res?.data?.success) {
       console.log("hello in");
       toast.success("Profile setup successfully", { autoClose: 500 });
       setTimeout(() => {
-        navigate("/mybookings");
+        navigate(role === "EXPERT" ? "/mybookings" : "/agency/experts/all");
+      }, 1000);
+    }
+    console.log(res);
+  };
+  const setupAgencyprofileData = async () => {
+    const user = localStorage.getItem("userId");
+    const role = localStorage.getItem("role");
+    const data = {
+      agency:user,
+      description: profileSetupData?.description,
+
+      languages: profileSetupData?.languages,
+      jobCategory: jobCategory,
+      expertise: storeSkills,
+      experience: profileSetupData.experience,
+    };
+
+    const res = await Axios.post(`${BASE_URL}agency/profile/setup`, {
+      ...data,
+    });
+    if (res && res.data && res.data.message) {
+      toast.success(res.data.message, { autoClose: 500 });
+      setTimeout(() => {
+        navigate(role === "EXPERT" ? "/mybookings" : "/agency/experts/all");
+      }, 1000);
+    }
+    if (res?.data?.success) {
+      console.log("hello in");
+      toast.success("Profile setup successfully", { autoClose: 500 });
+      setTimeout(() => {
+        navigate(role === "EXPERT" ? "/mybookings" : "/agency/experts/all");
       }, 1000);
     }
     console.log(res);
@@ -194,7 +228,7 @@ const SubCategory = () => {
                     className="btn_continue"
                     onClick={() => {
                       const isThisExpert = isExpert();
-                      if (storeSkills.length > 0 && !isThisExpert) {
+                      if (storeSkills.length > 0 && !isThisExpert && !isThisAgency) {
                         navigate("/RequestCateg");
                       }
                       if (storeSkills.length === 0) {
@@ -202,6 +236,9 @@ const SubCategory = () => {
                       }
                       if (isThisExpert) {
                         setupExpertProfileData();
+                      }
+                      if (isThisAgency) {
+                        setupAgencyprofileData();
                       }
                     }}
                   >

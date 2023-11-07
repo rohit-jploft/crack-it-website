@@ -10,7 +10,7 @@ import { useContext, useEffect, useState } from "react";
 import { BookingContext } from "../context/bookingContext";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { isExpert } from "../utils/authHelper";
+import { isAgency, isExpert } from "../utils/authHelper";
 import { UserContext } from "../context/userContext";
 const JobCategory = () => {
   const navigate = useNavigate();
@@ -26,6 +26,7 @@ const JobCategory = () => {
     getData();
   }, []);
   const isThisExpert = isExpert();
+  const isThisAgency = isAgency();
 
   useEffect(() => {
     if (
@@ -37,6 +38,17 @@ const JobCategory = () => {
       if (isThisExpert) {
         navigate("/setup-profile");
       }
+     
+    }
+    if (
+      !profileSetupData?.description ||
+      !profileSetupData?.languages ||
+      !profileSetupData?.experience
+    ) {
+      if (isThisAgency) {
+        navigate("/agency/setup-profile");
+      }
+     
     }
   });
   return (

@@ -24,6 +24,8 @@ const Header = () => {
   const navigate = useNavigate();
   const { profileData, setProfileData } = useContext(UserContext);
   const [userNotificationData, setuserNotificationData] = useState();
+  const [pageNo, setPageNo] = useState(10);
+  const [totalCount, setTotalCount] = useState();
   const [unReadCount, setUnReadCount] = useState();
   const getUserData = async () => {
     const token = localStorage.getItem("token");
@@ -40,8 +42,12 @@ const Header = () => {
   const getAllNotificationOfUser = async () => {
     const userId = localStorage.getItem("userId");
     try {
-      const res = await Axios.get(`${BASE_URL}notification/get-all/${userId}`);
+      const res = await Axios.get(
+        `${BASE_URL}notification/get-all/${userId}?limit=${pageNo}`
+      );
+      console.log(res?.data, "noti adtaata");
       setuserNotificationData(res?.data?.data?.data);
+      setTotalCount(res?.data?.pagination?.totalCount);
       setUnReadCount(res?.data?.data?.unReadCount);
       return res;
     } catch (error) {
@@ -51,7 +57,11 @@ const Header = () => {
   useEffect(() => {
     getUserData();
     getAllNotificationOfUser();
-  }, []);
+  }, [pageNo]);
+  const loadMoreNotication = () => {
+    console.log("inittal page count", pageNo);
+    setPageNo(pageNo + 5);
+  };
   const isTheUser = isUser();
   const role = localStorage.getItem("role");
   console.log(isTheUser, " isTheUser");
@@ -86,13 +96,19 @@ const Header = () => {
                     <img src={Notification} alt="Logo" />
                   </Badge>
                 }
+                
                 id="notifiaction-dropdown"
                 className="notification-menu"
               >
                 {userNotificationData &&
                   userNotificationData.map((noti) => {
                     return (
-                      <NavDropdown.Item style={{backgroundColor:noti?.isRead ? 'white' : '#D3D3D3'}}>
+                      <NavDropdown.Item
+                        style={{
+                          backgroundColor: noti?.isRead ? "white" : "#D3D3D3",
+                          overflowY:"auto", height:"40%"
+                        }}
+                      >
                         <div
                           className="notif_msg"
                           onClick={() =>
@@ -115,7 +131,17 @@ const Header = () => {
                     );
                   })}
                 {userNotificationData && userNotificationData.length === 0 && (
-                  <span style={{ textAlign: "center" }}>No notification </span>
+                 <div style={{display:"flex", justifyContent:"center",alignItems:'center' }}> <span style={{ textAlign: "center" }}>No notification </span></div>
+                )}
+                {totalCount > pageNo && (
+                  <div style={{display:"flex", justifyContent:"center",alignItems:'center' }}>
+                    <span
+                      style={{ textAlign: "center", cursor: "pointer" }}
+                      onClick={() => loadMoreNotication()}
+                    >
+                      Load more
+                    </span>
+                  </div>
                 )}
               </NavDropdown>
               <NavDropdown

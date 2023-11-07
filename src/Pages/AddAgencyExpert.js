@@ -17,6 +17,7 @@ import Axios from "axios";
 import { BASE_URL } from "../constant";
 import "react-toastify/dist/ReactToastify.css";
 import Header from "./Header";
+import ExpertImage from "../Images/expert-img.svg";
 import { getCategoryList } from "../data/booking";
 import { ToastContainer, toast } from "react-toastify";
 import { updateExpertProfile } from "../data/experts";
@@ -28,6 +29,7 @@ const validationSchema = Yup.object().shape({
   lastName: Yup.string().required("Last Name is required"),
   email: Yup.string()
     .email("Invalid email format")
+    .matches(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, "Invalid email")
     .required("Email is required"),
   password: Yup.string()
     .required("Password is required")
@@ -57,6 +59,7 @@ const validationSchemaWithOutPassword = Yup.object().shape({
   lastName: Yup.string().required("Last Name is required"),
   email: Yup.string()
     .email("Invalid email format")
+    .matches(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, "Invalid email")
     .required("Email is required"),
 
   phone: Yup.string()
@@ -181,8 +184,8 @@ const AddAgencyExpert = () => {
             toast.error("Something went wrong");
           }
         } else {
-            console.log("entered add new wali console")
-            console.log(values, "values")
+          console.log("entered add new wali console");
+          console.log(values, "values");
           const data = await addNewAgencyExpert(
             {
               firstName: values.firstName,
@@ -199,7 +202,7 @@ const AddAgencyExpert = () => {
             },
             profilePic
           );
-          console.log(data)
+          console.log(data);
           console.log(data, "new agency expert response data");
           if (data && data.success && data.status === 200) {
             toast.success(data.message, { autoClose: 500 });
@@ -392,9 +395,7 @@ const AddAgencyExpert = () => {
                   {console.log(recievedPic, "recieved pic")}
                   <img
                     src={
-                      recievedPic
-                        ? `${BASE_URL}${recievedPic}`
-                        : "/static/media/expert-img.199747df04b3a83a67b449c8ff5963a0.svg"
+                      recievedPic ? `${BASE_URL}${recievedPic}` : ExpertImage
                     }
                     // src="/static/media/expert-img.199747df04b3a83a67b449c8ff5963a0.svg"
                     alt="Img"

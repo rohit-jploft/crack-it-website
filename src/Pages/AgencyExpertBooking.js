@@ -50,7 +50,8 @@ const AgencyExpertBooking = () => {
   }, [key, cancelDone]);
 
   const cancelBooking = async (bookingId) => {
-    const cancel = await Axios.put(`${BASE_URL}booking/cancel/${bookingId}`);
+    const role = localStorage.getItem('role')
+    const cancel = await Axios.put(`${BASE_URL}booking/cancel/${bookingId}?role=${role}`);
     console.log(cancel);
     if (cancel && cancel?.data?.status === 200) {
       toast.success(cancel.data.message);
@@ -112,6 +113,8 @@ const AgencyExpertBooking = () => {
         toast.success(res.message);
         navigate(`/chat/${res.data.chat}`);
       }
+    } else {
+        
     }
   };
   return (

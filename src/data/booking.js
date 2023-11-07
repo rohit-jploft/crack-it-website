@@ -14,7 +14,6 @@ export const getAllmeetings = async (tabStatus) => {
   }
 };
 export const getAllAgencymeetings = async (tabStatus, uid) => {
- 
   try {
     const res = await Axios.get(
       `${BASE_URL}booking/get-all?tabStatus=${tabStatus}&userId=${uid}&role=EXPERT`
@@ -57,19 +56,36 @@ export const getCategoryList = async (parent, search = null) => {
   }
 };
 
-export const listExpert = async (search, jobCategory) => {
+export const listExpert = async (search, jobCategory, minExperience, maxExperience, minPrice, maxPrice, rating, typeOfExpert) => {
   try {
-    let url = `${BASE_URL}expert/get/all`;
-    if (search && !jobCategory) {
-      url = url + `?search=${search}`;
+    let url = `${BASE_URL}expert/get/all?`;
+
+    const queryParams = {};
+
+    if (search) {
+      queryParams.search = search;
     }
-    if (!search && jobCategory) {
-      url = url + `?jobCategory=${jobCategory}`;
+    if (jobCategory) {
+      queryParams.jobCategory = jobCategory;
     }
-    if (jobCategory && search) {
-      url = url + `?search=${search}&jobCategory=${jobCategory}`;
+    if (rating) {
+      queryParams.rating = rating;
     }
-    const experts = await Axios.get(url);
+    if (typeOfExpert) {
+      queryParams.typeOfExpert = typeOfExpert;
+    }
+    if(minPrice && maxPrice){
+      queryParams.startPrice = minPrice;
+      queryParams.endPrice = maxPrice;
+    }
+    if(minExperience && maxExperience){
+      queryParams.minExperience = minExperience;
+      queryParams.maxExperience = maxExperience;
+    }
+
+    const queryString = new URLSearchParams(queryParams).toString();
+    console.log(url+queryString, "url+ query")
+    const experts = await Axios.get(url+queryString);
     return experts.data;
   } catch (error) {
     return error.message;

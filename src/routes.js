@@ -34,11 +34,13 @@ import ReferAndEarn from "./Pages/ReferAndEarn";
 import EditAgencyProfile from "./Pages/EditAgencyProfile";
 import AgencyExpertProfile from "./Pages/AgencyExpertProfile";
 import AgencyExpertBooking from "./Pages/AgencyExpertBooking";
+import SetupAgencyProfile from "./Pages/SetupAgencyProfile";
 
 function AppRoutes() {
   const isAuthenticateds = isAuthenticated();
   const isThisExpert = isExpert()
   const isThisAgency = isAgency()
+  
   console.log("is Auth", isAuthenticateds);
   const routes = useRoutes([
     {
@@ -52,6 +54,10 @@ function AppRoutes() {
     {
       path: "/refer/earn",
       element: isAuthenticateds ? <ReferAndEarn />:<Navigate to="/login" /> ,
+    },
+    {
+      path: "/refer/signup/:referedBy",
+      element: isAuthenticateds ? <Signup />:<Navigate to="/login" /> ,
     },
     {
       path: "/agency/login",
@@ -109,6 +115,10 @@ function AppRoutes() {
     {
       path: "/mybookings",
       element: isAuthenticateds ? <MyBookings />:<Navigate to="/login" /> ,
+    },
+    {
+      path: "/rate/expert/:expertId",
+      element: isAuthenticateds && !isThisAgency && !isThisExpert ? <Rating />:<Navigate to="/login" /> ,
     },
     {
       path: "/agency/expert/bookings/:agencyExpertUserId",
@@ -190,6 +200,10 @@ function AppRoutes() {
     {
       path: "/setup-profile",
       element: isAuthenticateds ? <SetupExpertProfile/> : <Navigate to="/login" /> ,
+    },
+    {
+      path: "/agency/setup-profile",
+      element: isAuthenticateds ? <SetupAgencyProfile/> : <Navigate to="/login" /> ,
     },
   
     {

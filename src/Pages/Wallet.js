@@ -25,11 +25,9 @@ const Wallet = () => {
   const getWalletData = async () => {
     const data = await getWallet();
     setWalletData(data.data);
-    console.log(data);
   };
   const getAllWithdrawalReq = async () => {
     const data = await getAllWithDrawal();
-    console.log(data);
     setWithDrawalReqData(data.data);
   };
   useEffect(() => {
@@ -48,7 +46,6 @@ const Wallet = () => {
           <div className="main-content">
             <div className="wallet_field">
               <div>
-
                 <div className="wallet_amount">
                   <p>Wallet Amount</p>
                   <h3>${walletData?.wallet?.amount}</h3>
@@ -82,6 +79,178 @@ const Wallet = () => {
                         title="Transactions"
                       >
                         <Table width="100%">
+                          {walletData &&
+                            walletData.transactions &&
+                            walletData.transactions.length > 0 && (
+                              <thead>
+                                <tr width="100%">
+                                  <th width="1%"></th>
+                                  <th width="15%">Name</th>
+                                  <th width="24%">Date</th>
+                                  <th width="15%">Status</th>
+                                  <th width="15%">Amount</th>
+                                </tr>
+                              </thead>
+                            )}
+                          {walletData &&
+                            walletData.transactions &&
+                            walletData.transactions.length > 0 && (
+                              <tbody>
+                                {walletData?.transactions?.map(
+                                  (transaction) => {
+                                    const {
+                                      amount,
+                                      status,
+                                      type,
+                                      user,
+                                      otherUser,
+                                      createdAt,
+                                    } = transaction;
+                                    return (
+                                      <tr>
+                                        <td>
+                                          <img
+                                            className="wallet-img"
+                                            src={Walletimg}
+                                            alt="img"
+                                          />
+                                        </td>
+                                        <td className="Wname">
+                                          {otherUser?.firstName}{" "}
+                                          {otherUser?.lastName}
+                                        </td>
+                                        <td>
+                                          {getDateFromTimeStamps(createdAt)}
+                                        </td>
+                                        <td>
+                                          <div className="status_success">
+                                            {status}
+                                          </div>
+                                        </td>
+                                        <td>
+                                          <span
+                                            className={`${
+                                              type === "CREDIT" ? "C" : "D"
+                                            }amount`}
+                                          >
+                                            {amount}
+                                          </span>
+                                        </td>
+                                      </tr>
+                                    );
+                                  }
+                                )}
+                              </tbody>
+                            )}
+                        </Table>
+                        {walletData &&
+                          walletData.transactions &&
+                          walletData.transactions.length === 0 && (
+                            <div
+                              style={{
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                              }}
+                            >
+                              <span>No transactions</span>
+                            </div>
+                          )}
+                      </Tab>
+                      <Tab
+                        style={{ width: "100%" }}
+                        eventKey="Withdraw"
+                        title="Withdrawal Request"
+                      >
+                        <Table width="100%">
+                          {withdrawalReqData &&
+                            withdrawalReqData.length > 0 && (
+                              <thead>
+                                <tr width="100%">
+                                  <th width="1%"></th>
+                                  <th width="15%">Type</th>
+                                  <th width="15%">Bank Name</th>
+                                  <th width="24%">Date</th>
+                                  <th width="15%">Status</th>
+                                  <th width="15%">Amount</th>
+                                </tr>
+                              </thead>
+                            )}
+                          {withdrawalReqData &&
+                            withdrawalReqData.length > 0 && (
+                              <tbody>
+                                {withdrawalReqData?.map((withdraw) => {
+                                  const {
+                                    amount,
+                                    status,
+                                    type,
+                                    bank,
+                                    createdAt,
+                                  } = withdraw;
+                                  return (
+                                    <tr>
+                                      <td>
+                                        <img
+                                          className="wallet-img"
+                                          src={Walletimg}
+                                          alt="img"
+                                        />
+                                      </td>
+                                      <td className="Wname">{bank?.type}</td>
+                                      <td className="Wname">
+                                        {bank?.type === "UPI"
+                                          ? bank?.upiId
+                                          : bank?.bankName}
+                                      </td>
+                                      <td>
+                                        {getDateFromTimeStamps(createdAt)}
+                                      </td>
+                                      <td>
+                                        <div
+                                          className={`status_${
+                                            status == "Pending"
+                                              ? "pending"
+                                              : "success"
+                                          }`}
+                                        >
+                                          {status}
+                                        </div>
+                                      </td>
+                                      <td>
+                                        <span
+                                          className={`${
+                                            type === "CREDIT" ? "C" : "D"
+                                          }amount`}
+                                        >
+                                          {amount}
+                                        </span>
+                                      </td>
+                                    </tr>
+                                  );
+                                })}
+                              </tbody>
+                            )}
+                        </Table>
+                        {withdrawalReqData &&
+                          withdrawalReqData.length === 0 && (
+                            <div
+                              style={{
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                              }}
+                            >
+                              <span>No withdrawal transactions</span>
+                            </div>
+                          )}
+                      </Tab>
+                    </Tabs>
+                  )}
+                  {!isThisExpert && (
+                    <Table width="100%">
+                      {walletData &&
+                        walletData.transactions &&
+                        walletData.transactions.length > 0 && (
                           <thead>
                             <tr width="100%">
                               <th width="1%"></th>
@@ -91,125 +260,10 @@ const Wallet = () => {
                               <th width="15%">Amount</th>
                             </tr>
                           </thead>
-                          <tbody>
-                            {walletData?.transactions?.map((transaction) => {
-                              const {
-                                amount,
-                                status,
-                                type,
-                                user,
-                                otherUser,
-                                createdAt,
-                              } = transaction;
-                              return (
-                                <tr>
-                                  <td>
-                                    <img
-                                      className="wallet-img"
-                                      src={Walletimg}
-                                      alt="img"
-                                    />
-                                  </td>
-                                  <td className="Wname">
-                                    {otherUser?.firstName} {otherUser?.lastName}
-                                  </td>
-                                  <td>{getDateFromTimeStamps(createdAt)}</td>
-                                  <td>
-                                    <div className="status_success">
-                                      {status}
-                                    </div>
-                                  </td>
-                                  <td>
-                                    <span
-                                      className={`${
-                                        type === "CREDIT" ? "C" : "D"
-                                      }amount`}
-                                    >
-                                      {amount}
-                                    </span>
-                                  </td>
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                        </Table>
-                      </Tab>
-                      <Tab
-                        style={{ width: "100%" }}
-                        eventKey="Withdraw"
-                        title="Withdrawal Request"
-                      >
-                        <Table width="100%">
-                          <thead>
-                            <tr width="100%">
-                              <th width="1%"></th>
-                              <th width="15%">Type</th>
-                              <th width="15%">Bank Name</th>
-                              <th width="24%">Date</th>
-                              <th width="15%">Status</th>
-                              <th width="15%">Amount</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {withdrawalReqData?.map((withdraw) => {
-                              const { amount, status, type, bank, createdAt } =
-                                withdraw;
-                              return (
-                                <tr>
-                                  <td>
-                                    <img
-                                      className="wallet-img"
-                                      src={Walletimg}
-                                      alt="img"
-                                    />
-                                  </td>
-                                  <td className="Wname">{bank?.type}</td>
-                                  <td className="Wname">
-                                    {bank?.type === "UPI"
-                                      ? bank?.upiId
-                                      : bank?.bankName}
-                                  </td>
-                                  <td>{getDateFromTimeStamps(createdAt)}</td>
-                                  <td>
-                                    <div
-                                      className={`status_${
-                                        status == "Pending"
-                                          ? "pending"
-                                          : "success"
-                                      }`}
-                                    >
-                                      {status}
-                                    </div>
-                                  </td>
-                                  <td>
-                                    <span
-                                      className={`${
-                                        type === "CREDIT" ? "C" : "D"
-                                      }amount`}
-                                    >
-                                      {amount}
-                                    </span>
-                                  </td>
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                        </Table>
-                      </Tab>
-                    </Tabs>
-                  )}
-                  {!isThisExpert && (
-                    <Table width="100%">
-                      <thead>
-                        <tr width="100%">
-                          <th width="1%"></th>
-                          <th width="15%">Name</th>
-                          <th width="24%">Date</th>
-                          <th width="15%">Status</th>
-                          <th width="15%">Amount</th>
-                        </tr>
-                      </thead>
-                      <tbody>
+                        )}
+                       {walletData &&
+                        walletData.transactions &&
+                        walletData.transactions.length > 0 && (<tbody>
                         {walletData?.transactions?.map((transaction) => {
                           const {
                             amount,
@@ -247,8 +301,23 @@ const Wallet = () => {
                             </tr>
                           );
                         })}
-                      </tbody>
+                      </tbody>)}
+                      {walletData && walletData.transactions &&
+                      walletData.transactions.length === 0 && (
+                        <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "center",
+                          alignItems: "center",
+                        }}
+                      >
+                        <span>No transactions</span>
+                      </div>
+                      )
+                       
+                    }
                     </Table>
+                    
                   )}
                 </div>
               </div>

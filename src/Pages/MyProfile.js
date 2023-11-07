@@ -48,7 +48,7 @@ const MyProfile = () => {
                 <div className='expertprofile-detail'>
                    <div className='expert-image'>
                     <img src={ExpertImg} alt="Img" />
-                    <Button className='profile-img-edit' onClick=''><img src={Edit} alt="img" /></Button>
+                    {/* <Button className='profile-img-edit' onClick=''><img src={Edit} alt="img" /></Button> */}
                    </div>
                    <h2>{userdata.firstName} {userdata.lastName}</h2>
                    <p>User Experience & Motion Design</p>

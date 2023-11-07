@@ -18,7 +18,7 @@ import TextInput from "../components/InputField";
 import { UserContext } from "../context/userContext";
 
 const validationSchema = Yup.object().shape({
-  email: Yup.string().email("Invalid email").required("Email is required"),
+  email: Yup.string().email("Invalid email").matches(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, "Invalid email").required("Email is required"),
   password: Yup.string().required("Password is required"),
 });
 

@@ -18,7 +18,7 @@ import TextInput from "../components/InputField";
 import { UserContext } from "../context/userContext";
 
 const validationSchema = Yup.object().shape({
-  email: Yup.string().email("Invalid email").required("Email is required"),
+  email: Yup.string().email("Invalid email").matches(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, "Invalid email").required("Email is required"),
   password: Yup.string().required("Password is required"),
 });
 
@@ -52,9 +52,9 @@ const AgencyLogin = () => {
             onClose: () => {
               if (
                 !res.data.data.user.isExpertProfileVerified &&
-                res.data.data.user.role === "EXPERT"
+                res.data.data.user.role === "AGENCY"
               ) {
-                navigate("/setup-profile");
+                navigate("/agency/setup-profile");
               } else {
                 navigate("/agency/experts/all");
                 window.location.reload();
